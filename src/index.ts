@@ -20,7 +20,7 @@ ${html}
 XPATH for "${field}":`;
 }
 
-async function evaluateXPath(html: string, xpath: string): Promise<number> {
+async function evalXPATH(html: string, xpath: string): Promise<string[]> {
     try {
         const { JSDOM } = await import("jsdom");
         const dom = new JSDOM(html);
@@ -28,38 +28,44 @@ async function evaluateXPath(html: string, xpath: string): Promise<number> {
         const XPathResult = dom.window.XPathResult;
 
         const result = document.evaluate(xpath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
-        return result.snapshotLength;
+        const values: string[] = [];
+        for (let i = 0; i < result.snapshotLength; i++) {
+            const node = result.snapshotItem(i);
+            if (node) {
+                values.push(node.textContent || "");
+            }
+        }
+        return values;
     } catch (e) {
-        return 0;
+        return [];
     }
-}
-
-async function generateXPath(html: string, field: string): Promise<string> {
-    const maxAttempts = 5;
-
-    for (let attempt = 0; attempt < maxAttempts; attempt++) {
-        const promptText = buildPrompt(html, field, attempt);
-        const xpath = await promptGrammarXPATH(promptText);
-        if (!xpath) {
-            continue;
-        }
-
-        const count = await evaluateXPath(html, xpath);
-
-        if (count > 0) {
-            return xpath;
-        }
-    }
-
-    return "//text()";
 }
 
 async function generateXPaths(html: string, fields: string[]): Promise<string[]> {
     const xpaths: string[] = [];
+    const maxAttempts = 5;
+
     for (let i = 0; i < fields.length; i++) {
         const field = fields[i];
         if (!field) continue;
-        const xpath = await generateXPath(html, field);
+
+        let xpath = "//text()";
+        for (let attempt = 0; attempt < maxAttempts; attempt++) {
+            const promptText = buildPrompt(html, field, attempt);
+            const generatedXPath = await promptGrammarXPATH(promptText);
+            if (!generatedXPath) {
+                continue;
+            }
+
+            const results = await evalXPATH(html, generatedXPath);
+            console.log(results);
+
+            if (results.length > 0) {
+                xpath = generatedXPath;
+                break;
+            }
+        }
+
         xpaths.push(xpath);
     }
     return xpaths;
