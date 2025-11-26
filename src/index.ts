@@ -1,7 +1,7 @@
 import { promptGrammarXPATH } from "./llm.js";
 
 function buildPrompt(html: string, field: string, attempt: number): string {
-    const perturbations = [" Use class names like [@class='...']", " Try different class or tag combinations", " Look at the parent-child structure", " Use position-based selectors if needed", " Try a simpler selector"];
+    const perturbations = ["\nUse class names like [@class='...'].", "\nTry different class or tag combinations.", "\nLook at the parent-child structure.", "\nUse position-based selectors if needed.", "\nTry a simpler selector."];
     const extra = perturbations[attempt] || "";
     return `
 Generate ONE XPATH expression to extract ALL "${field}" values from this HTML.
@@ -30,7 +30,7 @@ async function evaluateXPath(html: string, xpath: string): Promise<number> {
         const result = document.evaluate(xpath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
         return result.snapshotLength;
     } catch (e) {
-        console.log(`    Error evaluating XPATH: ${e}`);
+        console.log(`Error evaluating XPATH: ${e}`);
         return 0;
     }
 }
