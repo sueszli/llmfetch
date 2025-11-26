@@ -11,11 +11,6 @@ const context = await model.createContext(); // limit mem: `contextSize: {max: 8
 const session = new LlamaChatSession({ contextSequence: context.getSequence() });
 const enableReprod = { temperature: 0, topK: 1, topP: 1.0, seed: 42 };
 
-// const q1 = "Write a small XPATH expression to select all the book titles in an XML document.";
-// console.log("User: " + q1);
-// const a1 = await session.prompt(q1, enableReprod);
-// console.log("AI: " + a1);
-
 async function prompt(input: string): Promise<string> {
     return await session.prompt(input, enableReprod);
 }
