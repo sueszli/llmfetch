@@ -17,8 +17,8 @@ export async function prompt(input: string): Promise<string> {
     return await session.prompt(input, enableReprod);
 }
 
+// no existing ggml grammar: https://github.com/ggml-org/llama.cpp/tree/master/grammars
 export function parseXPATH(response: string): string | null {
-    // no existing ggml grammar: https://github.com/ggml-org/llama.cpp/tree/master/grammars
     const lines = response
         .trim()
         .split("\n")
