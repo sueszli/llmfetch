@@ -7,13 +7,11 @@ Core flow:
 - User enters a URL and defines what data they want to extract (schema)
 - System fetches the page content
 - LLM processes the raw data and extracts structured data matching the schema
-  - The LLM should be local, lightweight and able to run on any consumer hardware, even with just CPUs.
-  - The LLM should also be able to take advantage of the metal performance shaders of Apple Silicon chips.
 - Results are displayed in a clean, usable format
 
 Features:
 
-- The backend should be written in Typescript with Deno.
+- The backend should be written in Typescript.
 - Take advantage of queueing mechanisms
 - Implement a web server that supports CRUD operations for create/update/delete/list of scrapers.
 - Create a scraping engine that fetches HTML from a given website.
