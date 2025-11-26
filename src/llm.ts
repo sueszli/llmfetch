@@ -1,6 +1,8 @@
 import { fileURLToPath } from "url";
 import path from "path";
 import { getLlama, LlamaChatSession, resolveModelFile } from "node-llama-cpp";
+import xpath from "xpath";
+import { JSDOM } from "jsdom";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const modelsDirectory = path.join(__dirname, "..", "models");
@@ -59,17 +61,23 @@ export function parseXPATH(response: string): string | null {
     return null;
 }
 
-export function isValidXPATH(xpath: string): boolean {
-    // very lenient check
+export function isValidXPATH(xpathStr: string): boolean {
+    if (!xpathStr.startsWith("/") && !xpathStr.startsWith("//")) return false;
 
-    if (!xpath.startsWith("/") && !xpath.startsWith("//")) return false;
-
-    const content = xpath.replace(/^\/+/, "");
+    const content = xpathStr.replace(/^\/+/, "");
     if (content.length === 0) return false;
 
-    if (xpath.includes("<") || xpath.includes(">")) return false;
+    if (xpathStr.includes("<") || xpathStr.includes(">")) return false;
+    if (xpathStr.length < 2 || xpathStr.length >= 1000) return false;
 
-    return xpath.length > 1 && xpath.length < 1000;
+    try {
+        const dummyDom = new JSDOM("<!DOCTYPE html><html><body></body></html>");
+        const dummyDoc = dummyDom.window.document;
+        xpath.selectWithResolver(xpathStr, dummyDoc, { lookupNamespaceURI: () => "http://example.com/ns" });
+        return true;
+    } catch {
+        return false;
+    }
 }
 
 export async function promptGrammarXPATH(input: string): Promise<string | null> {
