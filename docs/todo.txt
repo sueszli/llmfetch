@@ -1,0 +1,30 @@
+# Backend (Deno)
+
+Build a scraper that takes a URL, fetches the HTML, structures the data with an LLM.
+
+Core flow:
+
+- User enters a URL and defines what data they want to extract (schema)
+- System fetches the page content
+- LLM processes the raw data and extracts structured data matching the schema
+  - The LLM should be local, lightweight and able to run on any consumer hardware, even with just CPUs.
+  - The LLM should also be able to take advantage of the metal performance shaders of Apple Silicon chips.
+- Results are displayed in a clean, usable format
+
+Features:
+
+- The backend should be written in Typescript with Deno.
+- Take advantage of queueing mechanisms
+- Implement a web server that supports CRUD operations for create/update/delete/list of scrapers.
+- Create a scraping engine that fetches HTML from a given website.
+  - You can use a sandbox page as an example: https://sandbox.kadoa.com/
+  - Use an LLM to transform the HTML into the provided schema
+- Design a suitable database schema for storing scrapers (e.g, some in-memory data structure to manage the scraping processes) and the content (SQLite or CSV directory)
+- Ensure proper validation and error handling.
+
+# Frontend (Next.js + TypeScript)
+
+Features:
+
+- Create a simple UI that allows creating a new scraper (e.g. URL and data schema)
+- Display the results of a scraper
