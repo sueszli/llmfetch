@@ -7,7 +7,7 @@ const modelsDirectory = path.join(__dirname, "..", "models");
 const llama = await getLlama();
 const modelPath = await resolveModelFile("hf:stabilityai/stable-code-instruct-3b/stable-code-3b-q5_k_m.gguf", modelsDirectory);
 const model = await llama.loadModel({ modelPath });
-const context = await model.createContext(); // to reduce memory footprint: `contextSize: {max: 8096}`
+const context = await model.createContext(); // limit mem: `contextSize: {max: 8096}`
 const session = new LlamaChatSession({ contextSequence: context.getSequence() });
 const enableReprod = { temperature: 0, topK: 1, topP: 1.0, seed: 42 };
 
