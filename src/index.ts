@@ -17,14 +17,8 @@ const a1 = await session.prompt(q1);
 console.log(chalk.yellow("AI: ") + a1);
 console.log();
 
-const q2 = "Summarize what you said";
+const q2 = "What are the verbs in this sentence: 'The cat sat on the mat'";
 console.log(chalk.yellow("User: ") + q2);
-const a2 = await session.prompt(q2);
-console.log(chalk.yellow("AI: ") + a2);
-console.log();
-
-const q3 = "What are the verbs in this sentence: 'The cat sat on the mat'";
-console.log(chalk.yellow("User: ") + q3);
 const responseGrammar = await llama.createGrammarForJsonSchema({
     type: "object",
     properties: {
@@ -36,7 +30,6 @@ const responseGrammar = await llama.createGrammarForJsonSchema({
         },
     },
 });
-const a3 = await session.prompt(q3, { grammar: responseGrammar });
-const parsedResponse = responseGrammar.parse(a3);
-console.log(chalk.yellow("AI:"), parsedResponse.verbs);
+const a2 = await session.prompt(q2, { grammar: responseGrammar });
+console.log(chalk.yellow("AI:"), responseGrammar.parse(a2).verbs);
 console.log();
