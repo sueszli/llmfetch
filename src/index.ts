@@ -1,13 +1,7 @@
 import { prompt } from "./llm.js";
 
 function buildPrompt(html: string, field: string, attempt: number): string {
-    const perturbations = [
-        " Use class names like [@class='...']",
-        " Try different class or tag combinations",
-        " Look at the parent-child structure",
-        " Use position-based selectors if needed",
-        " Try a simpler selector",
-    ];
+    const perturbations = [" Use class names like [@class='...']", " Try different class or tag combinations", " Look at the parent-child structure", " Use position-based selectors if needed", " Try a simpler selector"];
     const extra = perturbations[attempt] || "";
     return `Generate ONE XPATH expression to extract ALL "${field}" values from this HTML.
 
@@ -26,25 +20,29 @@ XPATH for "${field}":`;
 }
 
 function parseXPath(response: string): string {
-    const lines = response.trim().split('\n').map(l => l.trim()).filter(l => l.length > 0);
+    const lines = response
+        .trim()
+        .split("\n")
+        .map((l) => l.trim())
+        .filter((l) => l.length > 0);
     for (const line of lines) {
-        if (line.startsWith('//') || line.startsWith('/')) return line;
+        if (line.startsWith("//") || line.startsWith("/")) return line;
         const match1 = line.match(/```(?:xpath)?\s*(\/\/?.+?)```/);
         if (match1 && match1[1]) return match1[1].trim();
         const match2 = line.match(/`(\/\/?.+?)`/);
         if (match2 && match2[1]) return match2[1].trim();
     }
     const trimmed = response.trim();
-    if (trimmed.startsWith('//') || trimmed.startsWith('/')) {
-        const firstLine = trimmed.split('\n')[0];
+    if (trimmed.startsWith("//") || trimmed.startsWith("/")) {
+        const firstLine = trimmed.split("\n")[0];
         if (firstLine) return firstLine;
     }
-    return '//text()';
+    return "//text()";
 }
 
 async function evaluateXPath(html: string, xpath: string): Promise<number> {
     try {
-        const { JSDOM } = await import('jsdom');
+        const { JSDOM } = await import("jsdom");
         const dom = new JSDOM(html);
         const { document } = dom.window;
         const XPathResult = dom.window.XPathResult;
@@ -132,10 +130,12 @@ const fields = ["country name", "capital", "population"];
 console.log("Starting XPATH generation...\n");
 console.log("=".repeat(60));
 
-generateXPaths(html, fields).then(xpaths => {
-    console.log("=".repeat(60));
-    console.log("\n✓ Final Results:");
-    fields.forEach((field, i) => {
-        console.log(`  ${field}: ${xpaths[i]}`);
-    });
-}).catch(console.error);
+generateXPaths(html, fields)
+    .then((xpaths) => {
+        console.log("=".repeat(60));
+        console.log("\n✓ Final Results:");
+        fields.forEach((field, i) => {
+            console.log(`  ${field}: ${xpaths[i]}`);
+        });
+    })
+    .catch(console.error);

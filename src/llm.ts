@@ -16,11 +16,15 @@ export async function prompt(input: string): Promise<string> {
 }
 
 export function parseXPathFromResponse(response: string): string | null {
-    const lines = response.trim().split('\n').map(l => l.trim()).filter(l => l.length > 0);
+    const lines = response
+        .trim()
+        .split("\n")
+        .map((l) => l.trim())
+        .filter((l) => l.length > 0);
 
     // Check each line for XPath expressions
     for (const line of lines) {
-        if (line.startsWith('//') || line.startsWith('/')) {
+        if (line.startsWith("//") || line.startsWith("/")) {
             if (isValidXPath(line)) return line;
         }
 
@@ -48,8 +52,8 @@ export function parseXPathFromResponse(response: string): string | null {
 
     // Check if the entire trimmed response starts with XPath
     const trimmed = response.trim();
-    if (trimmed.startsWith('//') || trimmed.startsWith('/')) {
-        const firstLine = trimmed.split('\n')[0];
+    if (trimmed.startsWith("//") || trimmed.startsWith("/")) {
+        const firstLine = trimmed.split("\n")[0];
         if (firstLine && isValidXPath(firstLine)) return firstLine;
     }
 
@@ -58,14 +62,14 @@ export function parseXPathFromResponse(response: string): string | null {
 
 export function isValidXPath(xpath: string): boolean {
     // Basic validation: must start with / or //
-    if (!xpath.startsWith('/') && !xpath.startsWith('//')) return false;
+    if (!xpath.startsWith("/") && !xpath.startsWith("//")) return false;
 
     // Must have some content after the initial slashes
-    const content = xpath.replace(/^\/+/, '');
+    const content = xpath.replace(/^\/+/, "");
     if (content.length === 0) return false;
 
     // Don't allow any HTML/script tags or other dangerous characters
-    if (xpath.includes('<') || xpath.includes('>')) return false;
+    if (xpath.includes("<") || xpath.includes(">")) return false;
 
     // Very lenient check - just ensure it's not complete garbage
     // Allow alphanumeric, common XPath operators and punctuation

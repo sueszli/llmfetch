@@ -94,11 +94,13 @@ describe("XPath parsing logic", () => {
     });
 
     test("should handle XPath in multiline response with explanations", () => {
-        const result = parseXPathFromResponse(`
+        const result = parseXPathFromResponse(
+            `
 Here is the XPath you requested:
 //div[@class='country-name']/text()
 This will extract all country names from the HTML.
-        `.trim());
+        `.trim(),
+        );
         assert.strictEqual(result, "//div[@class='country-name']/text()");
     });
 
