@@ -1,33 +1,28 @@
-import {fileURLToPath} from "url";
+import { fileURLToPath } from "url";
 import path from "path";
 import chalk from "chalk";
-import {getLlama, LlamaChatSession, resolveModelFile} from "node-llama-cpp";
+import { getLlama, LlamaChatSession, resolveModelFile } from "node-llama-cpp";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const modelsDirectory = path.join(__dirname, "..", "models");
 
-
 const llama = await getLlama();
 
 console.log(chalk.yellow("Resolving model file..."));
-const modelPath = await resolveModelFile(
-    "hf:stabilityai/stable-code-instruct-3b/stable-code-3b-q5_k_m.gguf",
-    modelsDirectory
-);
+const modelPath = await resolveModelFile("hf:stabilityai/stable-code-instruct-3b/stable-code-3b-q5_k_m.gguf", modelsDirectory);
 
 console.log(chalk.yellow("Loading model..."));
-const model = await llama.loadModel({modelPath});
+const model = await llama.loadModel({ modelPath });
 
 console.log(chalk.yellow("Creating context..."));
 const context = await model.createContext({
-    contextSize: {max: 8096} // omit this for a longer context size, but increased memory usage
+    // contextSize: {max: 8096} // omit this for a longer context size, but increased memory usage
 });
 
 const session = new LlamaChatSession({
-    contextSequence: context.getSequence()
+    contextSequence: context.getSequence(),
 });
 console.log();
-
 
 const q1 = "Hi there, how are you?";
 console.log(chalk.yellow("User: ") + q1);
@@ -43,19 +38,16 @@ const a1 = await session.prompt(q1, {
         // stream the response to the console as it's being generated
         // including segment information (like chain of thought)
 
-        if (chunk.type === "segment" && chunk.segmentStartTime != null)
-            process.stdout.write(chalk.bold(` [segment start: ${chunk.segmentType}] `));
+        if (chunk.type === "segment" && chunk.segmentStartTime != null) process.stdout.write(chalk.bold(` [segment start: ${chunk.segmentType}] `));
 
         process.stdout.write(chunk.text);
 
-        if (chunk.type === "segment" && chunk.segmentEndTime != null)
-            process.stdout.write(chalk.bold(` [segment end: ${chunk.segmentType}] `));
-    }
+        if (chunk.type === "segment" && chunk.segmentEndTime != null) process.stdout.write(chalk.bold(` [segment end: ${chunk.segmentType}] `));
+    },
 });
 process.stdout.write("\n");
 console.log(chalk.yellow("Consolidated AI answer: ") + a1);
 console.log();
-
 
 const q2 = "Summarize what you said";
 console.log(chalk.yellow("User: ") + q2);
@@ -63,7 +55,6 @@ console.log(chalk.yellow("User: ") + q2);
 const a2 = await session.prompt(q2);
 console.log(chalk.yellow("AI: ") + a2);
 console.log();
-
 
 const q3 = "What are the verbs in this sentence: 'The cat sat on the mat'";
 console.log(chalk.yellow("User: ") + q3);
@@ -76,12 +67,12 @@ const responseGrammar = await llama.createGrammarForJsonSchema({
         verbs: {
             type: "array",
             items: {
-                type: "string"
-            }
-        }
-    }
+                type: "string",
+            },
+        },
+    },
 });
-const a3 = await session.prompt(q3, {grammar: responseGrammar});
+const a3 = await session.prompt(q3, { grammar: responseGrammar });
 const parsedResponse = responseGrammar.parse(a3);
 console.log(chalk.yellow("AI:"), parsedResponse.verbs);
 console.log();
