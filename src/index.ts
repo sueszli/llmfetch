@@ -9,9 +9,9 @@ const modelPath = await resolveModelFile("hf:stabilityai/stable-code-instruct-3b
 const model = await llama.loadModel({ modelPath });
 const context = await model.createContext(); // to reduce memory footprint: `contextSize: {max: 8096}`
 const session = new LlamaChatSession({ contextSequence: context.getSequence() });
-const deterministicConfig = { temperature: 0, topK: 1, topP: 1.0, seed: 42 };
+const enableReprod = { temperature: 0, topK: 1, topP: 1.0, seed: 42 };
 
 const q1 = "Write a small XPATH expression to select all the book titles in an XML document.";
 console.log("User: " + q1);
-const a1 = await session.prompt(q1, deterministicConfig);
+const a1 = await session.prompt(q1, enableReprod);
 console.log("AI: " + a1);
