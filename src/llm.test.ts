@@ -124,100 +124,99 @@ This will select all country names.`);
     assert.strictEqual(result, "//h3[@class='country-name']/text()");
 });
 
-// Tests for isValidXPATH function
-test("isValidXPATH: should accept valid simple XPath with //", () => {
+test("should accept valid simple XPath with //", () => {
     assert.strictEqual(isValidXPATH("//div"), true);
 });
 
-test("isValidXPATH: should accept valid simple XPath with /", () => {
+test("should accept valid simple XPath with /", () => {
     assert.strictEqual(isValidXPATH("/html/body/div"), true);
 });
 
-test("isValidXPATH: should accept XPath with attributes", () => {
+test("should accept XPath with attributes", () => {
     assert.strictEqual(isValidXPATH("//div[@class='test']"), true);
 });
 
-test("isValidXPATH: should accept XPath with double-quoted attributes", () => {
+test("should accept XPath with double-quoted attributes", () => {
     assert.strictEqual(isValidXPATH('//div[@class="test"]'), true);
 });
 
-test("isValidXPATH: should accept XPath with complex predicates", () => {
+test("should accept XPath with complex predicates", () => {
     assert.strictEqual(isValidXPATH("//div[@class='test' and @id='main']"), true);
 });
 
-test("isValidXPATH: should accept XPath with position predicates", () => {
+test("should accept XPath with position predicates", () => {
     assert.strictEqual(isValidXPATH("//div[@class='container']/div[1]"), true);
 });
 
-test("isValidXPATH: should accept XPath with text() function", () => {
+test("should accept XPath with text() function", () => {
     assert.strictEqual(isValidXPATH("//div[@class='test']/text()"), true);
 });
 
-test("isValidXPATH: should accept XPath with wildcard", () => {
+test("should accept XPath with wildcard", () => {
     assert.strictEqual(isValidXPATH("//*[@class='item']"), true);
 });
 
-test("isValidXPATH: should accept XPath with union operator", () => {
+test("should accept XPath with union operator", () => {
     assert.strictEqual(isValidXPATH("//div[@class='a'] | //div[@class='b']"), true);
 });
 
-test("isValidXPATH: should accept XPath with namespace prefix", () => {
+test("should accept XPath with namespace prefix", () => {
     assert.strictEqual(isValidXPATH("//ns:element[@attr='value']"), true);
 });
 
-test("isValidXPATH: should reject XPath not starting with / or //", () => {
+test("should reject XPath not starting with / or //", () => {
     assert.strictEqual(isValidXPATH("div[@class='test']"), false);
 });
 
-test("isValidXPATH: should reject XPath with only slashes", () => {
+test("should reject XPath with only slashes", () => {
     assert.strictEqual(isValidXPATH("//"), false);
 });
 
-test("isValidXPATH: should reject empty XPath", () => {
+test("should reject empty XPath", () => {
     assert.strictEqual(isValidXPATH(""), false);
 });
 
-test("isValidXPATH: should reject XPath with HTML-like tags", () => {
+test("should reject XPath with HTML-like tags", () => {
     assert.strictEqual(isValidXPATH("//div<script>alert('xss')</script>"), false);
 });
 
-test("isValidXPATH: should reject XPath with unclosed bracket", () => {
+test("should reject XPath with unclosed bracket", () => {
     assert.strictEqual(isValidXPATH("//div[@class='test'"), false);
 });
 
-test("isValidXPATH: should reject XPath with unclosed quote", () => {
+test("should reject XPath with unclosed quote", () => {
     assert.strictEqual(isValidXPATH("//div[@class='test]"), false);
 });
 
-test("isValidXPATH: should reject XPath with double brackets", () => {
+test("should reject XPath with double brackets", () => {
     assert.strictEqual(isValidXPATH("//div[[@class='test']]"), false);
 });
 
-test("isValidXPATH: should reject XPath with extra closing brackets", () => {
+test("should reject XPath with extra closing brackets", () => {
     assert.strictEqual(isValidXPATH("//div[@class='test']]]"), false);
 });
 
-test("isValidXPATH: should reject XPath with incomplete expression", () => {
+test("should reject XPath with incomplete expression", () => {
     assert.strictEqual(isValidXPATH("//div[@class='test' and]"), false);
 });
 
-test("isValidXPATH: should reject XPath with empty predicate", () => {
+test("should reject XPath with empty predicate", () => {
     assert.strictEqual(isValidXPATH("//div[@]"), false);
 });
 
-test("isValidXPATH: should reject XPath with unclosed predicate", () => {
+test("should reject XPath with unclosed predicate", () => {
     assert.strictEqual(isValidXPATH("//div["), false);
 });
 
-test("isValidXPATH: should reject XPath with incomplete comparison", () => {
+test("should reject XPath with incomplete comparison", () => {
     assert.strictEqual(isValidXPATH("//div[@class='test' and @id=]"), false);
 });
 
-test("isValidXPATH: should reject XPath that is too long", () => {
+test("should reject XPath that is too long", () => {
     const longXPath = "//" + "div/".repeat(500);
     assert.strictEqual(isValidXPATH(longXPath), false);
 });
 
-test("isValidXPATH: should reject XPath that is too short", () => {
+test("should reject XPath that is too short", () => {
     assert.strictEqual(isValidXPATH("/"), false);
 });

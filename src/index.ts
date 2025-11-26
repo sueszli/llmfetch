@@ -3,7 +3,8 @@ import { promptGrammarXPATH } from "./llm.js";
 function buildPrompt(html: string, field: string, attempt: number): string {
     const perturbations = [" Use class names like [@class='...']", " Try different class or tag combinations", " Look at the parent-child structure", " Use position-based selectors if needed", " Try a simpler selector"];
     const extra = perturbations[attempt] || "";
-    return `Generate ONE XPATH expression to extract ALL "${field}" values from this HTML.
+    return `
+Generate ONE XPATH expression to extract ALL "${field}" values from this HTML.
 
 CRITICAL RULES:
 - Return ONLY the XPATH expression, no explanations
@@ -107,15 +108,10 @@ const html = `
 
 const fields = ["country name", "capital", "population"];
 
-console.log("Starting XPATH generation...\n");
-console.log("=".repeat(60));
-
 generateXPaths(html, fields)
     .then((xpaths) => {
-        console.log("=".repeat(60));
-        console.log("\n✓ Final Results:");
         fields.forEach((field, i) => {
-            console.log(`  ${field}: ${xpaths[i]}`);
+            console.log(`${field}: ${xpaths[i]}`);
         });
     })
     .catch(console.error);
