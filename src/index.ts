@@ -5,48 +5,18 @@ import { getLlama, LlamaChatSession, resolveModelFile } from "node-llama-cpp";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const modelsDirectory = path.join(__dirname, "..", "models");
-
 const llama = await getLlama();
-
-console.log(chalk.yellow("Resolving model file..."));
 const modelPath = await resolveModelFile("hf:stabilityai/stable-code-instruct-3b/stable-code-3b-q5_k_m.gguf", modelsDirectory);
-
-console.log(chalk.yellow("Loading model..."));
 const model = await llama.loadModel({ modelPath });
-
-console.log(chalk.yellow("Creating context..."));
-const context = await model.createContext({
-    // contextSize: {max: 8096} // omit this for a longer context size, but increased memory usage
-});
-
-const session = new LlamaChatSession({
-    contextSequence: context.getSequence(),
-});
-console.log();
+const context = await model.createContext(); // to reduce memory footprint: `contextSize: {max: 8096}`
+const session = new LlamaChatSession({ contextSequence: context.getSequence() });
 
 const q1 = "Hi there, how are you?";
 console.log(chalk.yellow("User: ") + q1);
 
 process.stdout.write(chalk.yellow("AI: "));
-const a1 = await session.prompt(q1, {
-    // uncomment for a simpler response streaming, without segment information
-    // onTextChunk(chunk) {
-    //     // stream the response to the console as it's being generated
-    //     process.stdout.write(chunk);
-    // }
-    onResponseChunk(chunk) {
-        // stream the response to the console as it's being generated
-        // including segment information (like chain of thought)
-
-        if (chunk.type === "segment" && chunk.segmentStartTime != null) process.stdout.write(chalk.bold(` [segment start: ${chunk.segmentType}] `));
-
-        process.stdout.write(chunk.text);
-
-        if (chunk.type === "segment" && chunk.segmentEndTime != null) process.stdout.write(chalk.bold(` [segment end: ${chunk.segmentType}] `));
-    },
-});
-process.stdout.write("\n");
-console.log(chalk.yellow("Consolidated AI answer: ") + a1);
+const a1 = await session.prompt(q1);
+console.log(a1);
 console.log();
 
 const q2 = "Summarize what you said";
