@@ -1,21 +1,4 @@
-import { fileURLToPath } from "url";
-import path from "path";
-import { getLlama, LlamaChatSession, resolveModelFile } from "node-llama-cpp";
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const modelsDirectory = path.join(__dirname, "..", "models");
-
-let session: LlamaChatSession | null = null;
-
-async function getSession(): Promise<LlamaChatSession> {
-    if (session) return session;
-    const llama = await getLlama();
-    const modelPath = await resolveModelFile("hf:stabilityai/stable-code-instruct-3b/stable-code-3b-q5_k_m.gguf", modelsDirectory);
-    const model = await llama.loadModel({ modelPath });
-    const context = await model.createContext();
-    session = new LlamaChatSession({ contextSequence: context.getSequence() });
-    return session;
-}
+import { prompt } from "./llm.js";
 
 function buildPrompt(html: string, field: string, attempt: number): string {
     const perturbations = [
@@ -75,14 +58,13 @@ async function evaluateXPath(html: string, xpath: string): Promise<number> {
 }
 
 async function generateXPath(html: string, field: string): Promise<string> {
-    const s = await getSession();
     const maxAttempts = 5;
 
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
         console.log(`  [Attempt ${attempt + 1}/${maxAttempts}]`);
 
-        const prompt = buildPrompt(html, field, attempt);
-        const response = await s.prompt(prompt, { temperature: 0, topK: 1, topP: 1.0, seed: 42 + attempt });
+        const promptText = buildPrompt(html, field, attempt);
+        const response = await prompt(promptText);
         const xpath = parseXPath(response);
 
         console.log(`    Generated: ${xpath}`);
@@ -99,8 +81,8 @@ async function generateXPath(html: string, field: string): Promise<string> {
     }
 
     console.log(`    ⚠ All attempts failed, returning last XPATH`);
-    const finalPrompt = buildPrompt(html, field, 0);
-    const finalResponse = await s.prompt(finalPrompt, { temperature: 0, topK: 1, topP: 1.0, seed: 42 });
+    const finalPromptText = buildPrompt(html, field, 0);
+    const finalResponse = await prompt(finalPromptText);
     return parseXPath(finalResponse);
 }
 
