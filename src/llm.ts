@@ -17,6 +17,25 @@ export async function prompt(input: string): Promise<string> {
     return await session.prompt(input, enableReprod);
 }
 
+export function isValidXPATH(xpathStr: string): boolean {
+    if (!xpathStr.startsWith("/") && !xpathStr.startsWith("//")) return false;
+
+    const content = xpathStr.replace(/^\/+/, "");
+    if (content.length === 0) return false;
+
+    if (xpathStr.includes("<") || xpathStr.includes(">")) return false;
+    if (xpathStr.length < 2 || xpathStr.length >= 1000) return false;
+
+    try {
+        const dummyDom = new JSDOM("<!DOCTYPE html><html><body></body></html>");
+        const dummyDoc = dummyDom.window.document;
+        xpath.selectWithResolver(xpathStr, dummyDoc, { lookupNamespaceURI: () => "http://example.com/ns" });
+        return true;
+    } catch {
+        return false;
+    }
+}
+
 // no existing ggml grammar: https://github.com/ggml-org/llama.cpp/tree/master/grammars
 export function parseXPATH(response: string): string | null {
     const lines = response
@@ -59,25 +78,6 @@ export function parseXPATH(response: string): string | null {
     }
 
     return null;
-}
-
-export function isValidXPATH(xpathStr: string): boolean {
-    if (!xpathStr.startsWith("/") && !xpathStr.startsWith("//")) return false;
-
-    const content = xpathStr.replace(/^\/+/, "");
-    if (content.length === 0) return false;
-
-    if (xpathStr.includes("<") || xpathStr.includes(">")) return false;
-    if (xpathStr.length < 2 || xpathStr.length >= 1000) return false;
-
-    try {
-        const dummyDom = new JSDOM("<!DOCTYPE html><html><body></body></html>");
-        const dummyDoc = dummyDom.window.document;
-        xpath.selectWithResolver(xpathStr, dummyDoc, { lookupNamespaceURI: () => "http://example.com/ns" });
-        return true;
-    } catch {
-        return false;
-    }
 }
 
 export async function promptGrammarXPATH(input: string): Promise<string | null> {

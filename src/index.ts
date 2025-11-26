@@ -30,7 +30,6 @@ async function evaluateXPath(html: string, xpath: string): Promise<number> {
         const result = document.evaluate(xpath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
         return result.snapshotLength;
     } catch (e) {
-        console.log(`Error evaluating XPATH: ${e}`);
         return 0;
     }
 }
@@ -39,29 +38,19 @@ async function generateXPath(html: string, field: string): Promise<string> {
     const maxAttempts = 5;
 
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
-        console.log(`  [Attempt ${attempt + 1}/${maxAttempts}]`);
-
         const promptText = buildPrompt(html, field, attempt);
         const xpath = await promptGrammarXPATH(promptText);
         if (!xpath) {
-            console.log(`    Generated: null (no valid XPath found)`);
             continue;
         }
 
-        console.log(`    Generated: ${xpath}`);
-
         const count = await evaluateXPath(html, xpath);
-        console.log(`    Matched: ${count} nodes`);
 
         if (count > 0) {
-            console.log(`    ✓ Success`);
             return xpath;
         }
-
-        console.log(`    ✗ Failed, retrying...`);
     }
 
-    console.log(`    ⚠ All attempts failed, returning fallback XPATH`);
     return "//text()";
 }
 
@@ -70,10 +59,8 @@ async function generateXPaths(html: string, fields: string[]): Promise<string[]>
     for (let i = 0; i < fields.length; i++) {
         const field = fields[i];
         if (!field) continue;
-        console.log(`\n[${i + 1}/${fields.length}] Processing field: "${field}"`);
         const xpath = await generateXPath(html, field);
         xpaths.push(xpath);
-        console.log(`Final XPATH: ${xpath}\n`);
     }
     return xpaths;
 }
