@@ -6,6 +6,10 @@ install:
 fmt:
 	npx prettier --write .
 
+.PHONY: test
+test:
+	npm test
+
 .PHONY: run
 run:
 	npm start
