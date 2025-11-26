@@ -1,4 +1,4 @@
-import { prompt } from "./llm.js";
+import { promptGrammarXPATH } from "./llm.js";
 
 function buildPrompt(html: string, field: string, attempt: number): string {
     const perturbations = [" Use class names like [@class='...']", " Try different class or tag combinations", " Look at the parent-child structure", " Use position-based selectors if needed", " Try a simpler selector"];
@@ -17,27 +17,6 @@ HTML:
 ${html}
 
 XPATH for "${field}":`;
-}
-
-function parseXPath(response: string): string {
-    const lines = response
-        .trim()
-        .split("\n")
-        .map((l) => l.trim())
-        .filter((l) => l.length > 0);
-    for (const line of lines) {
-        if (line.startsWith("//") || line.startsWith("/")) return line;
-        const match1 = line.match(/```(?:xpath)?\s*(\/\/?.+?)```/);
-        if (match1 && match1[1]) return match1[1].trim();
-        const match2 = line.match(/`(\/\/?.+?)`/);
-        if (match2 && match2[1]) return match2[1].trim();
-    }
-    const trimmed = response.trim();
-    if (trimmed.startsWith("//") || trimmed.startsWith("/")) {
-        const firstLine = trimmed.split("\n")[0];
-        if (firstLine) return firstLine;
-    }
-    return "//text()";
 }
 
 async function evaluateXPath(html: string, xpath: string): Promise<number> {
@@ -62,8 +41,11 @@ async function generateXPath(html: string, field: string): Promise<string> {
         console.log(`  [Attempt ${attempt + 1}/${maxAttempts}]`);
 
         const promptText = buildPrompt(html, field, attempt);
-        const response = await prompt(promptText);
-        const xpath = parseXPath(response);
+        const xpath = await promptGrammarXPATH(promptText);
+        if (!xpath) {
+            console.log(`    Generated: null (no valid XPath found)`);
+            continue;
+        }
 
         console.log(`    Generated: ${xpath}`);
 
@@ -78,10 +60,8 @@ async function generateXPath(html: string, field: string): Promise<string> {
         console.log(`    ✗ Failed, retrying...`);
     }
 
-    console.log(`    ⚠ All attempts failed, returning last XPATH`);
-    const finalPromptText = buildPrompt(html, field, 0);
-    const finalResponse = await prompt(finalPromptText);
-    return parseXPath(finalResponse);
+    console.log(`    ⚠ All attempts failed, returning fallback XPATH`);
+    return "//text()";
 }
 
 async function generateXPaths(html: string, fields: string[]): Promise<string[]> {
