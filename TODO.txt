@@ -15,4 +15,4 @@ Features:
 
 User Interface:
 
-- Ideally next.js with react for the frontend (but terminal user interface will also do if time is limited)
+- Next.js with React (or terminal user interface if time is limited)
