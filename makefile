@@ -8,6 +8,7 @@ fmt:
 
 .PHONY: test
 test:
+	chmod +x ./test.sh && ./test.sh
 	npm test
 
 .PHONY: run

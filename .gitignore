@@ -1,6 +1,6 @@
 *.db
 *.db-wal
-*.db-shm)
+*.db-shm
 
 /.idea
 /.vscode
