@@ -27,6 +27,7 @@ fail() {
 #
 # setup
 #
+
 PORT=$PORT npm run start &
 SERVER_PID=$!
 
