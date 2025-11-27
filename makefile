@@ -13,3 +13,7 @@ test:
 .PHONY: run
 run:
 	npm start
+
+# .PHONY: clean
+# clean:
+# 	rm -rf *.db

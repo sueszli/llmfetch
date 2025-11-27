@@ -47,7 +47,6 @@
         "@types/better-sqlite3": "^7.6.13",
         "@types/jsdom": "^27.0.0",
         "@types/node": "^22.15.17",
-        "drizzle-kit": "^0.31.7",
         "eslint": "^9.26.0",
         "eslint-import-resolver-typescript": "^4.3.4",
         "eslint-plugin-import": "^2.31.0",

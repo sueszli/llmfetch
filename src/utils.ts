@@ -1,4 +1,5 @@
 export function log(...args: any[]) {
+    // just a console.log wrapper for now
     const getCallerLocation = (): string => {
         const stack = new Error().stack;
         if (!stack) return "unknown";
