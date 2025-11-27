@@ -1,6 +1,7 @@
-.PHONY: install
-install:
+.PHONY: run
+run:
 	npm install
+	npm start
 
 .PHONY: fmt
 fmt:
@@ -12,11 +13,7 @@ test:
 	chmod +x src/index.e2e.test.sh && src/index.e2e.test.sh
 	npm test
 
-.PHONY: run
-run:
-	npm start
-
 .PHONY: clean
 clean:
-# 	rm -rf dist node_modules models *.db
+# 	rm -rf dist node_modules models
 	rm -rf *.db
