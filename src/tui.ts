@@ -175,7 +175,10 @@ async function fetchTable(id: number) {
 
 function showList() {
     currentView = "list";
+    // Hide all other views
     tableView.hide();
+    formBox.hide();
+    // Show and focus list
     jobList.show();
     jobList.focus();
     screen.render();
@@ -183,7 +186,10 @@ function showList() {
 
 function showTable() {
     currentView = "table";
+    // Hide all other views
     jobList.hide();
+    formBox.hide();
+    // Show and focus table
     tableView.show();
     tableView.focus();
     screen.render();
@@ -191,15 +197,17 @@ function showTable() {
 
 function showForm() {
     currentView = "form";
+    // Hide all other views
     jobList.hide();
     tableView.hide();
-    formBox.show();
+    // Clear form fields
     urlInput.clearValue();
     fieldsInput.clearValue();
     formStatus.setContent("");
+    // Show and focus form
+    formBox.show();
     urlInput.focus();
     screen.render();
-    urlInput.readInput();
 }
 
 async function submitForm() {
@@ -213,21 +221,17 @@ async function submitForm() {
         return;
     }
 
-    const fieldNames = fieldsStr
+    const fields = fieldsStr
         .split(",")
         .map((f) => f.trim())
         .filter((f) => f.length > 0);
-    if (fieldNames.length === 0) {
+
+    if (fields.length === 0) {
         formStatus.setContent("Error: Please provide at least one field!");
         formStatus.style.fg = "red";
         screen.render();
         return;
     }
-
-    const fields: Record<string, number> = {};
-    fieldNames.forEach((name, index) => {
-        fields[name] = index;
-    });
 
     try {
         formStatus.setContent("Submitting...");
@@ -265,20 +269,19 @@ jobList.on("select", async (_item, index) => {
     }
 });
 
-urlInput.on("submit", () => {
+urlInput.key(["enter"], () => {
     fieldsInput.focus();
-    fieldsInput.readInput();
 });
 
-urlInput.on("cancel", () => {
+urlInput.key(["escape"], () => {
     showList();
 });
 
-fieldsInput.on("submit", async () => {
+fieldsInput.key(["enter"], async () => {
     await submitForm();
 });
 
-fieldsInput.on("cancel", () => {
+fieldsInput.key(["escape"], () => {
     showList();
 });
 
