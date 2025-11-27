@@ -1,4 +1,5 @@
 import { genXPATH } from "./llm.js";
+import { log } from "./utils.js";
 
 async function evalXPATH(html: string, xpath: string): Promise<string[]> {
     try {
@@ -17,7 +18,10 @@ async function parseHTML(html: string, field: string, maxAttempts = 5) {
         if (!xpath) continue;
         const result = await evalXPATH(html, xpath);
         const success = result.length > 0 && result.some((r) => r.length > 0);
-        if (success) return result;
+        if (success) {
+            log(`successfully extracted "${field}"`);
+            return result;
+        }
     }
     return null;
 }

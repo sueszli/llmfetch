@@ -3,7 +3,7 @@ import path from "path";
 import { getLlama, LlamaChatSession, resolveModelFile } from "node-llama-cpp";
 import xpath from "xpath";
 import { JSDOM } from "jsdom";
-import { log } from "./log.js";
+import { log } from "./utils.js";
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 const modelsDirectory = path.join(dirname, "..", "models");
@@ -124,6 +124,6 @@ export async function genXPATH(html: string, query: string, attemptCount: number
     };
     const response = await session.prompt(promptText, samplingParams);
     const parsed = parseXPATH(response);
-    log("generated xpath", JSON.stringify({ query, attemptCount, xpath: parsed }));
+    log("generated xpath", JSON.stringify({ query, xpath: parsed, attemptCount }));
     return parsed;
 }
