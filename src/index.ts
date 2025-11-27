@@ -1,5 +1,16 @@
 import { promptGrammarXPATH } from "./llm.js";
 
+async function evalXPATH(html: string, xpath: string): Promise<string[]> {
+    try {
+        const { JSDOM } = await import("jsdom");
+        const { document, XPathResult } = new JSDOM(html).window;
+        const result = document.evaluate(xpath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+        return Array.from({ length: result.snapshotLength }, (_, i) => result.snapshotItem(i)?.textContent || "");
+    } catch {
+        return [];
+    }
+}
+
 function buildPrompt(html: string, field: string, attempt: number): string {
     const perturbations = ["\nUse class names like [@class='...'].", "\nTry different class or tag combinations.", "\nLook at the parent-child structure.", "\nUse position-based selectors if needed.", "\nTry a simpler selector."];
     const extra = perturbations[attempt] || "";
@@ -18,19 +29,6 @@ HTML:
 ${html}
 
 XPATH for "${field}":`;
-}
-
-async function evalXPATH(html: string, xpath: string): Promise<string[]> {
-    try {
-        const { JSDOM } = await import("jsdom");
-        const { document, XPathResult } = new JSDOM(html).window;
-
-        const result = document.evaluate(xpath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
-
-        return Array.from({ length: result.snapshotLength }, (_, i) => result.snapshotItem(i)?.textContent || "");
-    } catch {
-        return [];
-    }
 }
 
 async function generateXPaths(html: string, fields: string[]): Promise<string[]> {
