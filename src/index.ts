@@ -44,18 +44,21 @@ const html = `
 
 const fields = ["product title", "price", "rating", "stock"];
 
-async function main(html: string, fields: string[]): Promise<void> {
-    const findResults = async (field: string) => {
-        for (let i = 0; i < 5; i++) {
+async function main(html: string, fields: string[]) {
+    const maxAttempts = 5;
+
+    for (const field of fields) {
+        for (let i = 0; i < maxAttempts; i++) {
             const xpath = await genXPATH(html, field, i).catch(() => null);
             if (!xpath) continue;
             const results = await evalXPATH(html, xpath);
-            if (results.some((r) => r.length > 0)) return results;
+            const success = results.some((r) => r.length > 0);
+            if (!success) continue;
+
+            console.log(field, results);
         }
-        return [];
-    };
-    const results = await Promise.all(fields.map(findResults));
-    results.forEach((res, i) => console.log(`${fields[i]}:`, res));
+    }
 }
 
-main(html, fields);
+await main(html, fields);
+console.log("done");
