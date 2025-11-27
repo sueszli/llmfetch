@@ -26,6 +26,7 @@
         "models:pull": "node-llama-cpp pull --dir ./models \"hf:stabilityai/stable-code-instruct-3b/stable-code-3b-q5_k_m.gguf\"",
         "start": "vite-node ./src/index.ts",
         "start:build": "node ./dist/index.ts",
+        "tui": "vite-node ./src/tui.ts",
         "prebuild": "rimraf ./dist ./tsconfig.tsbuildinfo",
         "build": "tsc --build tsconfig.json --force",
         "test": "tsx --test src/*.test.ts",
@@ -36,7 +37,9 @@
     },
     "dependencies": {
         "@hono/node-server": "^1.19.6",
+        "@types/blessed": "^0.1.26",
         "better-sqlite3": "^12.4.6",
+        "blessed": "^0.1.81",
         "chalk": "^5.4.1",
         "drizzle-orm": "^0.44.7",
         "hono": "^4.10.7",
