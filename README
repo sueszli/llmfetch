@@ -22,7 +22,7 @@ methodology:
 - `ggml` / `node-llama-cpp` instead of `webllm` for local inference, because it can utilize metal performance shaders on apple silicon gpus. currently only supports nodejs.
 - `stable-code-instruct-3b` for xpath query generation. small enough for consumer hardware, but not very accurate. really limits the demo potential.
 - a custom parser because there is no grammer implemented to enforce xpath synthesis with ggml models yet: https://github.com/ggml-org/llama.cpp/tree/master/grammars
-- reproducibility via fixed random seeds and temperature 0 (greedy decoding).
+- reproducibility via fixed random seeds and temperature 0 (greedy decoding) and a test suite for drift detection.
 
 outlook:
 
