@@ -14,6 +14,7 @@ test:
 run:
 	npm start
 
-# .PHONY: clean
-# clean:
-# 	rm -rf *.db
+.PHONY: clean
+clean:
+# 	rm -rf dist node_modules models *.db
+	rm -rf *.db

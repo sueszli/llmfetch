@@ -9,7 +9,7 @@ Features:
 
 - Web server that supports CRUD operations for create/update/delete/list of scrapers.
 - Scraping engine that fetches HTML from a given website and processes it with an LLM to extract structured data.
-- Suitable database schema for storing the data from the scrapers with the given schema + the status and ID of the scraper all at once (e.g SQLite + some very ergonomic ORM) --> implement this first and also use db.e2e.test.ts to make sure everything works as expected
+- database for storing stuff
 - Next.js + React for the frontend ----> skip this for now
 
 make sure to have high code locality, use elegant and simple functions and keep things short and simple, just like you would in haskell / C. inline functions that are too short.
