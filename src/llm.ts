@@ -11,7 +11,6 @@ const modelPath = await resolveModelFile("hf:stabilityai/stable-code-instruct-3b
 const model = await llama.loadModel({ modelPath });
 const context = await model.createContext();
 const session = new LlamaChatSession({ contextSequence: context.getSequence() });
-const enableReprod = { temperature: 0, topK: 1, topP: 1.0, seed: 42 };
 
 export function isValidXPATH(xpathStr: string): boolean {
     const startsWithSlash = xpathStr.startsWith("/") || xpathStr.startsWith("//");
@@ -34,8 +33,24 @@ export function isValidXPATH(xpathStr: string): boolean {
 
 // no existing ggml grammar: https://github.com/ggml-org/llama.cpp/tree/master/grammars
 export function parseXPATH(response: string): string | null {
-    const lines = response
-        .trim()
+    const trimmed = response.trim();
+
+    // Extract from multi-line markdown code blocks
+    const codeBlockRegex = /```(?:xpath)?\s*\n?([\s\S]*?)\n?```/g;
+    let match;
+    while ((match = codeBlockRegex.exec(trimmed)) !== null) {
+        const content = match[1]?.trim();
+        if (content) {
+            const lines = content.split("\n").map((l) => l.trim());
+            for (const line of lines) {
+                if ((line.startsWith("//") || line.startsWith("/")) && isValidXPATH(line)) {
+                    return line;
+                }
+            }
+        }
+    }
+
+    const lines = trimmed
         .split("\n")
         .map((l) => l.trim())
         .filter((l) => l.length > 0);
@@ -43,7 +58,6 @@ export function parseXPATH(response: string): string | null {
     // prettier-ignore
     const extractionPatterns = [
         (line: string) => (line.startsWith("//") || line.startsWith("/")) ? line : null,
-        (line: string) => line.match(/```(?:xpath)?\s*(\/\/?.+?)```/)?.[1]?.trim() ?? null,
         (line: string) => line.match(/`(\/\/?.+?)`/)?.[1]?.trim() ?? null,
         (line: string) => line.match(/(\/\/[^\s]+)/)?.[1]?.trim() ?? null,
     ];
@@ -57,7 +71,6 @@ export function parseXPATH(response: string): string | null {
         }
     }
 
-    const trimmed = response.trim();
     const firstLine = trimmed.split("\n")[0];
     if (firstLine && (trimmed.startsWith("//") || trimmed.startsWith("/")) && isValidXPATH(firstLine)) {
         return firstLine;
@@ -66,48 +79,51 @@ export function parseXPATH(response: string): string | null {
     return null;
 }
 
-function buildPrompt(html: string, query: string, attemptCount: number): string {
-    // prettier-ignore
-    const rules = [
-        "Return ONLY the XPATH expression, no explanations",
-        "MUST use structural selectors (class names, tag names, positions)",
-        "NEVER use contains() or text content matching",
-        "Use [@class='className'] for class-based selection",
-        "The XPATH must select ALL matching elements (not just one)",
-    ];
-    
-    // prettier-ignore
-    const perturbations = [
-        "Add /text() at the end to get text content",
-        "Focus on class names like [@class='...']",
-        "Try different class or tag combinations",
-        "Look at the parent-child structure carefully",
-        "Use position-based selectors like [1] or [last()]",
-        "Try a simpler, more general selector",
-        "Consider using descendant axis (//) instead of child axis (/)",
-        "Look for unique ID attributes if available",
-        "Try selecting by tag name and filtering by position",
-        "Use ancestor-descendant relationships",
-        "Consider combining multiple attributes in the selector",
-    ];
-    rules.push(perturbations[attemptCount - 1] || "");
-
+function buildPrompt(html: string, query: string): string {
     // prettier-ignore
     return [
-        `Generate ONE XPATH expression to extract ALL "${query}" values from this HTML.`,
+        `Task: Write XPath to select all "${query}" elements`,
         "",
-        "CRITICAL RULES:",
-        ...rules.map((rule) => `- ${rule}`),
+        "STRICT RULES:",
+        "1. Output ONLY the XPath expression - no explanations",
+        "2. Find the class name that matches the query",
+        "3. Use format: //element[@class='exact-class-name']",
+        "4. Single closing bracket ] not double ]]",
+        "5. NEVER use text(), contains(), or following-sibling",
         "",
-        "HTML:",
+        "EXAMPLES:",
+        "Q: country names",
+        "HTML: <div class='country'><h3 class='country-name'>Afghanistan</h3></div>",
+        "A: //h3[@class='country-name']",
+        "",
+        "Q: capitals",
+        "HTML: <div class='country'><span class='country-capital'>Kabul</span></div>",
+        "A: //span[@class='country-capital']",
+        "",
+        "Q: population",
+        "HTML: <div class='country'><span class='country-population'>38928346</span></div>",
+        "A: //span[@class='country-population']",
+        "",
+        "NOW YOUR TURN:",
         html,
         "",
-        `XPATH for "${query}":`
+        `XPath for "${query}":`
     ].join("\n");
 }
 
 export async function genXPATH(html: string, query: string, attemptCount: number): Promise<string | null> {
-    const promptText = buildPrompt(html, query, attemptCount);
-    const response = await session.prompt(promptText, enableReprod);
-    return parseXPATH(response);
+    const promptText = buildPrompt(html, query);
+    // deterministic but varied output per attempt
+    const samplingParams = {
+        temperature: 0,
+        topK: 1,
+        topP: 1.0,
+        seed: 42 + attemptCount * 1000,
+        maxTokens: 150,
+        stopStrings: ["\n\n", "Explanation:", "Note:", "This XPath"],
+    };
+    const response = await session.prompt(promptText, samplingParams);
+
+    const parsed = parseXPATH(response);
+    return parsed;
 }

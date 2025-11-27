@@ -27,7 +27,6 @@ async function generateXPaths(html: string, fields: string[]): Promise<string[]>
             }
 
             const results = await evalXPATH(html, generatedXPath);
-            console.log(results);
 
             if (results.length > 0) {
                 xpath = generatedXPath;
@@ -44,36 +43,39 @@ const html = `
 <!DOCTYPE html>
 <html>
 <body>
-    <div class="container">
-        <div class="country">
-            <h3 class="country-name"><i class="icon-flag"></i>Afghanistan</h3>
-            <span class="country-capital">Kabul</span>
-            <span class="country-population">38928346</span>
-            <span class="country-area">652090.0</span>
-        </div>
-        <div class="country">
-            <h3 class="country-name"><i class="icon-flag"></i>Åland Islands</h3>
-            <span class="country-capital">Mariehamn</span>
-            <span class="country-population">28875</span>
-            <span class="country-area">1580.0</span>
-        </div>
-        <div class="country">
-            <h3 class="country-name"><i class="icon-flag"></i>Albania</h3>
-            <span class="country-capital">Tirana</span>
-            <span class="country-population">2877797</span>
-            <span class="country-area">28748.0</span>
-        </div>
+    <div class="products-list">
+        <article class="product-card">
+            <h2 class="product-title">Wireless Headphones</h2>
+            <div class="product-price">$89.99</div>
+            <span class="product-rating">4.5</span>
+            <p class="product-description">Premium noise-cancelling headphones</p>
+            <button class="product-stock">In Stock</button>
+        </article>
+        <article class="product-card">
+            <h2 class="product-title">Smart Watch</h2>
+            <div class="product-price">$199.99</div>
+            <span class="product-rating">4.8</span>
+            <p class="product-description">Fitness tracker with heart rate monitor</p>
+            <button class="product-stock">In Stock</button>
+        </article>
+        <article class="product-card">
+            <h2 class="product-title">Laptop Stand</h2>
+            <div class="product-price">$45.00</div>
+            <span class="product-rating">4.2</span>
+            <p class="product-description">Adjustable aluminum laptop stand</p>
+            <button class="product-stock">Out of Stock</button>
+        </article>
     </div>
 </body>
 </html>
 `.trim();
 
-const fields = ["country name", "capital", "population"];
+const fields = ["product title", "price", "rating", "stock"];
 
 generateXPaths(html, fields)
     .then((xpaths) => {
         fields.forEach((field, i) => {
-            console.log(`${field}: ${xpaths[i]}`);
+            console.log(`Field: ${field}\nXPath: ${xpaths[i]}\n`);
         });
     })
     .catch(console.error);
