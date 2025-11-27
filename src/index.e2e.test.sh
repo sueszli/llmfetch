@@ -1,7 +1,6 @@
 #!/bin/bash
 set -e
 
-BASE_URL="http://localhost:3000"
 SERVER_PID=""
 
 cleanup() {
@@ -38,6 +37,8 @@ done
 # 
 # tests
 # 
+
+BASE_URL="http://localhost:3000"
 
 test "empty jobs list"
 RESPONSE=$(curl -s "$BASE_URL/jobs")
