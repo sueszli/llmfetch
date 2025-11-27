@@ -1,4 +1,4 @@
-Build a mini AI scraper that fetches HTML from a URL and structures the data with an LLM to then display the results with a simple terminal user interface.
+Build a mini AI scraper that fetches HTML from a URL and structures the data with an LLM to then display the results with a simple user interface.
 
 Core flow:
 
@@ -12,3 +12,7 @@ Features:
 - Implement a web server that supports CRUD operations for create/update/delete/list of scrapers.
 - Create a scraping engine that fetches HTML from a given website and processes it with an LLM to extract structured data.
 - Design a suitable database schema for storing scrapers (e.g SQLite).
+
+User Interface:
+
+- Ideally next.js with react for the frontend (but terminal user interface will also do if time is limited)
