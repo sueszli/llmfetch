@@ -1,11 +1,8 @@
-```
 o-----o
-|\    |\
 | o---+-o
-o-+---o |  neuro-symbolic
- \|    \|  data extraction
-  o-----o
-```
+o-+---o | neuro-symbolic
+,\|....\| data extraction
+,,o-----o
 
 commonly, extracting structured data from html using llms involves asking the model to output the data directly. this approach has several limitations: (1) it can hallucinate values, (2) is brittle to changes in html structure and most importantly (3) does not scale due to context window constraints and the cost of repeated api calls.
 
