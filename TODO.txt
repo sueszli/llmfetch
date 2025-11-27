@@ -10,4 +10,4 @@ Features:
 - Web server that supports CRUD operations for create/update/delete/list of scrapers.
 - Scraping engine that fetches HTML from a given website and processes it with an LLM to extract structured data.
 - Suitable database schema for storing scrapers (e.g SQLite).
-- Next.js + React for the frontend.
+- Next.js + React for the frontend ----> skip this for now
