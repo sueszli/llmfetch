@@ -11,20 +11,6 @@ async function evalXPATH(html: string, xpath: string): Promise<string[]> {
     }
 }
 
-async function generateXPaths(html: string, fields: string[]): Promise<void> {
-    const findResults = async (field: string) => {
-        for (let i = 0; i < 5; i++) {
-            const xpath = await genXPATH(html, field, i).catch(() => null);
-            if (!xpath) continue;
-            const results = await evalXPATH(html, xpath);
-            if (results.some((r) => r.length > 0)) return results;
-        }
-        return [];
-    };
-    const results = await Promise.all(fields.map(findResults));
-    results.forEach((res, i) => console.log(`${fields[i]}:`, res));
-}
-
 const html = `
 <!DOCTYPE html>
 <html>
@@ -58,4 +44,18 @@ const html = `
 
 const fields = ["product title", "price", "rating", "stock"];
 
-generateXPaths(html, fields);
+async function main(html: string, fields: string[]): Promise<void> {
+    const findResults = async (field: string) => {
+        for (let i = 0; i < 5; i++) {
+            const xpath = await genXPATH(html, field, i).catch(() => null);
+            if (!xpath) continue;
+            const results = await evalXPATH(html, xpath);
+            if (results.some((r) => r.length > 0)) return results;
+        }
+        return [];
+    };
+    const results = await Promise.all(fields.map(findResults));
+    results.forEach((res, i) => console.log(`${fields[i]}:`, res));
+}
+
+main(html, fields);

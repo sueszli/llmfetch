@@ -3,6 +3,7 @@ import path from "path";
 import { getLlama, LlamaChatSession, resolveModelFile } from "node-llama-cpp";
 import xpath from "xpath";
 import { JSDOM } from "jsdom";
+import { log } from "./log.js";
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 const modelsDirectory = path.join(dirname, "..", "models");
@@ -113,7 +114,6 @@ function buildPrompt(html: string, query: string): string {
 
 export async function genXPATH(html: string, query: string, attemptCount: number): Promise<string | null> {
     const promptText = buildPrompt(html, query);
-    // deterministic but varied output per attempt
     const samplingParams = {
         temperature: 0,
         topK: 1,
@@ -123,7 +123,7 @@ export async function genXPATH(html: string, query: string, attemptCount: number
         stopStrings: ["\n\n", "Explanation:", "Note:", "This XPath"],
     };
     const response = await session.prompt(promptText, samplingParams);
-
     const parsed = parseXPATH(response);
+    log("generated xpath", { query, attemptCount, xpath: parsed });
     return parsed;
 }
