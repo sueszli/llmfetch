@@ -112,7 +112,7 @@ function buildPrompt(html: string, query: string): string {
     ].join("\n");
 }
 
-export async function genXPATH(html: string, query: string, attemptCount: number): Promise<string | null> {
+async function genXPATH(html: string, query: string, attemptCount: number): Promise<string | null> {
     const promptText = buildPrompt(html, query);
     const samplingParams = {
         temperature: 0,
@@ -126,4 +126,30 @@ export async function genXPATH(html: string, query: string, attemptCount: number
     const parsed = parseXPATH(response);
     log("generated xpath", JSON.stringify({ query, xpath: parsed, attemptCount }));
     return parsed;
+}
+
+async function evalXPATH(html: string, xpath: string): Promise<string[]> {
+    try {
+        const { JSDOM } = await import("jsdom");
+        const { document, XPathResult } = new JSDOM(html).window;
+        const result = document.evaluate(xpath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+        return Array.from({ length: result.snapshotLength }, (_, i) => result.snapshotItem(i)?.textContent?.trim() || "");
+    } catch {
+        return [];
+    }
+}
+
+export async function parseHTML(html: string, field: string, maxAttempts = 5) {
+    html = html.trim();
+    for (let i = 0; i < maxAttempts; i++) {
+        const xpath = await genXPATH(html, field, i).catch(() => null);
+        if (!xpath) continue;
+        const result = await evalXPATH(html, xpath);
+        const success = result.length > 0 && result.some((r) => r.length > 0);
+        if (success) {
+            log(`successfully extracted "${field}"`);
+            return result;
+        }
+    }
+    return null;
 }
