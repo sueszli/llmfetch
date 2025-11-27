@@ -1,3 +1,5 @@
+*.db
+
 /.idea
 /.vscode
 node_modules
