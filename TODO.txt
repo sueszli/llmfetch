@@ -1,24 +1,3 @@
-> ULTRATHINK implement a terminal user interface that's simple and works similar to htop and can send requests to the backend.\
-\
-use a library that lets you write code concisely.\
-\
-it should have 2 fields, one for me to enter a URL and one for me to enter comma seperated fields i want to extract\
-\
-it always shows a list of tables in the database that i can click to have a scrollable table view of the scraped data
+ULTRATHINK implement a terminal user interface as a second process. that's simple, leverages the most popular TUI library and is implemented in very few lines of code. it should work similar to htop and send requests to the backend for monitoring use a library that lets you write code concisely. it should always display a list of clickable buttons each showing tables in the database that i can click on to have a scrollable table view of the scraped data like a database browser
 
-
-
-Core flow:
-
-- User enters a URL and defines what data they want to extract (schema)
-- System fetches the page content
-- LLM processes the raw data and extracts structured data matching the schema
-- Results are displayed in a clean, usable format
-
-Features:
-
-- Web server that supports CRUD operations for create/update/delete/list of scrapers.
-- Scraping engine that fetches HTML from a given website and processes it with an LLM to extract structured data.
-- Next.js + React for the frontend ----> skip this for now
-
-make sure to have high code locality, use elegant and simple functions and keep things short and simple, just like you would in haskell / C. inline functions that are too short.
+Next.js + React for the frontend ----> skip this for now
