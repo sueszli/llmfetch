@@ -10,9 +10,9 @@ in this small-scale experiment, we use llms to generate xpath queries instead. g
 
 this yields a neuro-symbolic approach to web scraping, combining the pattern recognition strengths of llms with the reliability, efficiency and interpretability of symbolic extraction methods like xpath (or css selectors). it needs just enough context for the model to recognize the a pattern and can then apply the generated queries to arbitrarily large documents without further llm calls.
 
-see `docs/` for screenshots.
-
 to use, run: `make run`.
+
+check out screenshots on: https://github.com/sueszli/llmfetch/tree/main/docs
 
 methodology:
 
