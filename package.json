@@ -35,13 +35,7 @@
         "clean": "rm -rf ./node_modules ./dist ./tsconfig.tsbuildinfo ./models"
     },
     "dependencies": {
-        "@hono/node-server": "^1.19.6",
-        "@types/better-sqlite3": "^7.6.13",
-        "better-sqlite3": "^12.4.6",
         "chalk": "^5.4.1",
-        "drizzle-kit": "^0.31.7",
-        "drizzle-orm": "^0.44.7",
-        "hono": "^4.10.7",
         "jsdom": "^24.1.3",
         "node-llama-cpp": "^3.14.2",
         "xpath": "^0.0.34"
