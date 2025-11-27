@@ -58,9 +58,9 @@ export function parseXPATH(response: string): string | null {
 
     // prettier-ignore
     const extractionPatterns = [
-        (line: string) => (line.startsWith("//") || line.startsWith("/")) ? line : null,
+        (line: string) => ((line.startsWith("//") || line.startsWith("/")) ? line : null),
         (line: string) => line.match(/`(\/\/?.+?)`/)?.[1]?.trim() ?? null,
-        (line: string) => line.match(/(\/\/[^\s]+)/)?.[1]?.trim() ?? null,
+        (line: string) => line.match(/(\/\/[^\s]+)/)?.[1]?.trim() ?? null
     ];
 
     for (const line of lines) {

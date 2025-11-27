@@ -1,9 +1,9 @@
 import { test, before, after } from "node:test";
 import assert from "node:assert";
-import { createJob, readJob, updateJob, deleteJob, listJobs, closeDB, initDB, type JobRow, type JobInfo } from "./db.js";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import { createJob, readJob, updateJob, deleteJob, listJobs, closeDB, initDB } from "./db.js";
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 const testDbPath = path.join(dirname, "..", "test-scrapers.db");

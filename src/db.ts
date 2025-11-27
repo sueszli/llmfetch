@@ -1,6 +1,6 @@
-import Database from "better-sqlite3";
 import path from "path";
 import { fileURLToPath } from "url";
+import Database from "better-sqlite3";
 import { log } from "./utils.js";
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -11,21 +11,33 @@ export type JobRow = {
     [key: string]: string | number; // dynamic string fields
 };
 
-let sqlite: Database.Database = new Database(defaultDbPath);
-sqlite.pragma("journal_mode = WAL"); // fast table creation, https://sqlite.org/wal.html
-sqlite.exec(`CREATE TABLE IF NOT EXISTS _metadata (key TEXT PRIMARY KEY, value INTEGER NOT NULL)`); // table counter
+let sqlite: Database.Database | null = null;
 
 export function initDB(dbPath?: string) {
+    // for custom path (like tests)
     if (sqlite) {
         sqlite.close();
     }
     sqlite = new Database(dbPath || defaultDbPath);
     sqlite.pragma("journal_mode = WAL");
-    sqlite.exec(`CREATE TABLE IF NOT EXISTS _metadata (key TEXT PRIMARY KEY, value INTEGER NOT NULL)`);
+    sqlite.exec("CREATE TABLE IF NOT EXISTS _metadata (key TEXT PRIMARY KEY, value INTEGER NOT NULL)");
+}
+
+function getDB(): Database.Database {
+    if (!sqlite) {
+        initDB();
+    }
+    if (!sqlite) {
+        throw new Error("failed to init db");
+    }
+    return sqlite;
 }
 
 export function closeDB() {
-    sqlite.close();
+    if (sqlite) {
+        sqlite.close();
+        sqlite = null;
+    }
 }
 
 function sanitize(name: string, options?: { prefix?: string; isColumn?: boolean }): string {
@@ -51,7 +63,7 @@ export function createJob(fields: string[]): number {
 
     const getAndIncrementCounter = (): number => {
         const counterKey = "job_counter";
-        const stmt = sqlite.prepare(`INSERT INTO _metadata (key, value) VALUES (?, 0) ON CONFLICT(key) DO UPDATE SET value = value + 1 RETURNING value`);
+        const stmt = getDB().prepare("INSERT INTO _metadata (key, value) VALUES (?, 0) ON CONFLICT(key) DO UPDATE SET value = value + 1 RETURNING value");
         const result = stmt.get(counterKey) as { value: number };
         return result.value;
     };
@@ -62,7 +74,7 @@ export function createJob(fields: string[]): number {
     const tableName = `job_${id}_${timestamp}`;
 
     const fieldColumns = fields.map((f) => `${sanitize(f, { isColumn: true })} TEXT`).join(", ");
-    sqlite.exec(`
+    getDB().exec(`
         CREATE TABLE ${tableName} (
             id INTEGER PRIMARY KEY AUTOINCREMENT
             ${fields.length > 0 ? "," : ""} ${fieldColumns}
@@ -74,7 +86,7 @@ export function createJob(fields: string[]): number {
 
 function getTableName(id: number): string | null {
     const pattern = `job_${id}_%`;
-    const table = sqlite.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name LIKE ?").get(pattern) as any;
+    const table = getDB().prepare("SELECT name FROM sqlite_master WHERE type='table' AND name LIKE ?").get(pattern) as any;
     return table ? table.name : null;
 }
 
@@ -83,12 +95,12 @@ export function readJob(jobId: number, rowId?: number): JobRow[] {
     if (!tableName) return [];
 
     if (rowId !== undefined) {
-        const stmt = sqlite.prepare(`SELECT * FROM ${tableName} WHERE id = ?`);
+        const stmt = getDB().prepare(`SELECT * FROM ${tableName} WHERE id = ?`);
         const result = stmt.get(rowId);
         return result ? [result as JobRow] : [];
     }
 
-    const stmt = sqlite.prepare(`SELECT * FROM ${tableName}`);
+    const stmt = getDB().prepare(`SELECT * FROM ${tableName}`);
     return stmt.all() as JobRow[];
 }
 
@@ -100,7 +112,7 @@ export function updateJob(jobId: number, data: Record<string, string>): number {
     const values = Object.values(data);
     const placeholders = columns.map(() => "?").join(", ");
 
-    const stmt = sqlite.prepare(`
+    const stmt = getDB().prepare(`
         INSERT INTO ${tableName} (${columns.join(", ")})
         VALUES (${placeholders})
     `);
@@ -112,7 +124,7 @@ export function deleteJob(id: number): boolean {
     const tableName = getTableName(id);
     if (!tableName) return false;
 
-    sqlite.exec(`DROP TABLE ${tableName}`);
+    getDB().exec(`DROP TABLE ${tableName}`);
     return true;
 }
 
@@ -137,12 +149,12 @@ export function listJobs(): JobInfo[] {
     };
 
     const countEntries = (tableName: string): Record<string, number> => {
-        const columns = sqlite.prepare(`PRAGMA table_info(${tableName})`).all() as any[];
+        const columns = getDB().prepare(`PRAGMA table_info(${tableName})`).all() as any[];
         const fieldNames = columns.filter((col: any) => col.name !== "id").map((col: any) => col.name);
 
         const fields: Record<string, number> = {};
         for (const fieldName of fieldNames) {
-            const result = sqlite.prepare(`SELECT COUNT(*) as count FROM ${tableName} WHERE ${fieldName} IS NOT NULL AND ${fieldName} != ''`).get() as any;
+            const result = getDB().prepare(`SELECT COUNT(*) as count FROM ${tableName} WHERE ${fieldName} IS NOT NULL AND ${fieldName} != ''`).get() as any;
             const originalName = fieldName.replace(/^f_/, "");
             fields[originalName] = result.count;
         }
@@ -150,7 +162,7 @@ export function listJobs(): JobInfo[] {
         return fields;
     };
 
-    const tables = sqlite.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name LIKE 'job_%'").all() as any[];
+    const tables = getDB().prepare("SELECT name FROM sqlite_master WHERE type='table' AND name LIKE 'job_%'").all() as any[];
     return tables
         .map((t) => {
             const parsed = parseTableName(t.name);
