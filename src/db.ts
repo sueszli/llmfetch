@@ -20,44 +20,36 @@ export type Scraper = {
 export type ScraperRow = {
     id: number;
     url: string;
-    status: ScraperStatus;
-    createdAt: number;
-    [key: string]: any; // Dynamic fields
+    status: ScraperStatus; // whether data is ready for retrieval
+    createdAt: number; // snapshot time
+    [key: string]: any; // dynamic fields, based on user-defined schema
 };
 
 let sqlite: Database.Database | null = null;
 let db: ReturnType<typeof drizzle> | null = null;
 
-export function initDB(customPath?: string) {
-    const actualPath = customPath || dbPath;
-    sqlite = new Database(actualPath);
-    sqlite.pragma("journal_mode = WAL");
-    db = drizzle(sqlite);
-    return db;
-}
-
-export function getDB() {
-    if (!db) throw new Error("Database not initialized. Call initDB() first.");
-    return db;
-}
-
 export function getSQLite(): ReturnType<typeof Database> {
-    if (!sqlite) throw new Error("Database not initialized. Call initDB() first.");
+    if (!sqlite) {
+        sqlite = new Database(dbPath);
+        sqlite.pragma("journal_mode = WAL");
+        db = drizzle(sqlite);
+    }
     return sqlite;
 }
 
 export function closeDB() {
-    if (sqlite) {
-        sqlite.close();
-        sqlite = null;
-        db = null;
+    if (!sqlite) {
+        return;
     }
+    sqlite.close();
+    sqlite = null;
+    db = null;
 }
 
+// TODO: replace with a single `sanitize` function
 function sanitizeTableName(name: string): string {
     return "scraper_" + name.replace(/[^a-zA-Z0-9_]/g, "_").toLowerCase();
 }
-
 function sanitizeColumnName(name: string): string {
     return name.replace(/[^a-zA-Z0-9_]/g, "_").toLowerCase();
 }
