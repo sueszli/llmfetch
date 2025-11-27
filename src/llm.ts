@@ -66,32 +66,38 @@ export function parseXPATH(response: string): string | null {
     return null;
 }
 
-// prettier-ignore
-const perturbations = [
-    "\nUse class names like [@class='...'].",
-    "\nTry different class or tag combinations.",
-    "\nLook at the parent-child structure.",
-    "\nUse position-based selectors if needed.",
-    "\nTry a simpler selector.",
-];
-
 function buildPrompt(html: string, query: string, attemptCount: number): string {
-    const extra = perturbations[attemptCount] || "";
-    return `
-Generate ONE XPATH expression to extract ALL "${query}" values from this HTML.
+    // prettier-ignore
+    const baseRules = [
+        "Return ONLY the XPATH expression, no explanations",
+        "MUST use structural selectors (class names, tag names, positions)",
+        "NEVER use contains() or text content matching",
+        "Use [@class='className'] for class-based selection",
+        "Add /text() at the end to get text content",
+        "The XPATH must select ALL matching elements (not just one)",
+    ];
 
-CRITICAL RULES:
-- Return ONLY the XPATH expression, no explanations
-- MUST use structural selectors (class names, tag names, positions)
-- NEVER use contains() or text content matching
-- Use [@class='className'] for class-based selection
-- Add /text() at the end to get text content
-- The XPATH must select ALL matching elements (not just one)${extra}
+    // prettier-ignore
+    const perturbations = [
+        "Focus on class names like [@class='...']",
+        "Try different class or tag combinations",
+        "Look at the parent-child structure carefully",
+        "Use position-based selectors like [1] or [last()]",
+        "Try a simpler, more general selector",
+        "Consider using descendant axis (//) instead of child axis (/)",
+        "Look for unique ID attributes if available",
+        "Try selecting by tag name and filtering by position",
+        "Use ancestor-descendant relationships",
+        "Consider combining multiple attributes in the selector",
+    ];
 
-HTML:
-${html}
+    const rules = [...baseRules];
+    const perturbation = perturbations[attemptCount - 1];
+    if (perturbation) {
+        rules.push(perturbation);
+    }
 
-XPATH for "${query}":`;
+    return [`Generate ONE XPATH expression to extract ALL "${query}" values from this HTML.`, "", "CRITICAL RULES:", ...rules.map((rule) => `- ${rule}`), "", "HTML:", html, "", `XPATH for "${query}":`].join("\n");
 }
 
 export async function genXPATH(html: string, query: string, attemptCount: number): Promise<string | null> {
