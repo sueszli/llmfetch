@@ -6,10 +6,8 @@ import { log } from "./utils.js";
 
 const app = new Hono();
 
-// List all jobs
 app.get("/jobs", (c) => c.json(listJobs()));
 
-// Create new job
 app.post("/jobs", async (c) => {
     const { fields } = await c.req.json<{ fields: string[] }>();
     if (!Array.isArray(fields) || fields.length === 0) return c.json({ error: "fields array required" }, 400);
@@ -17,7 +15,6 @@ app.post("/jobs", async (c) => {
     return c.json({ id }, 201);
 });
 
-// Get job data
 app.get("/jobs/:id", (c) => {
     const id = parseInt(c.req.param("id"));
     if (isNaN(id)) return c.json({ error: "invalid id" }, 400);
@@ -25,7 +22,6 @@ app.get("/jobs/:id", (c) => {
     return data.length > 0 ? c.json(data) : c.json({ error: "not found" }, 404);
 });
 
-// Delete job
 app.delete("/jobs/:id", (c) => {
     const id = parseInt(c.req.param("id"));
     if (isNaN(id)) return c.json({ error: "invalid id" }, 400);
@@ -33,7 +29,6 @@ app.delete("/jobs/:id", (c) => {
     return success ? c.json({ success: true }) : c.json({ error: "not found" }, 404);
 });
 
-// Scrape URL and add to job
 app.post("/jobs/:id/scrape", async (c) => {
     const id = parseInt(c.req.param("id"));
     if (isNaN(id)) return c.json({ error: "invalid id" }, 400);
