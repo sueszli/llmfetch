@@ -11,6 +11,17 @@ async function evalXPATH(html: string, xpath: string): Promise<string[]> {
     }
 }
 
+async function parseHTML(html: string, field: string, maxAttempts = 5) {
+    for (let i = 0; i < maxAttempts; i++) {
+        const xpath = await genXPATH(html, field, i).catch(() => null);
+        if (!xpath) continue;
+        const result = await evalXPATH(html, xpath);
+        const success = result.length > 0 && result.some((r) => r.length > 0);
+        if (success) return result;
+    }
+    return null;
+}
+
 const html = `
 <!DOCTYPE html>
 <html>
@@ -44,21 +55,7 @@ const html = `
 
 const fields = ["product title", "price", "rating", "stock"];
 
-async function main(html: string, fields: string[]) {
-    const maxAttempts = 5;
-
-    for (const field of fields) {
-        for (let i = 0; i < maxAttempts; i++) {
-            const xpath = await genXPATH(html, field, i).catch(() => null);
-            if (!xpath) continue;
-            const results = await evalXPATH(html, xpath);
-            const success = results.some((r) => r.length > 0);
-            if (!success) continue;
-
-            console.log(field, results);
-            break;
-        }
-    }
+for (const field of fields) {
+    const result = await parseHTML(html, field);
+    console.log(field, result);
 }
-
-main(html, fields);
