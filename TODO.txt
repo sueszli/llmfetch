@@ -1,3 +1,13 @@
+> ULTRATHINK implement a terminal user interface that's simple and works similar to htop and can send requests to the backend.\
+\
+use a library that lets you write code concisely.\
+\
+it should have 2 fields, one for me to enter a URL and one for me to enter comma seperated fields i want to extract\
+\
+it always shows a list of tables in the database that i can click to have a scrollable table view of the scraped data
+
+
+
 Core flow:
 
 - User enters a URL and defines what data they want to extract (schema)

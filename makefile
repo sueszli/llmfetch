@@ -8,7 +8,8 @@ fmt:
 
 .PHONY: test
 test:
-	chmod +x ./test.sh && ./test.sh
+	rm -f scrapers.db scrapers.db-shm scrapers.db-wal
+	chmod +x src/index.e2e.test.sh && src/index.e2e.test.sh
 	npm test
 
 .PHONY: run
