@@ -1,4 +1,4 @@
-import { promptGrammarXPATH } from "./llm.js";
+import { genXPATH } from "./llm.js";
 
 async function evalXPATH(html: string, xpath: string): Promise<string[]> {
     try {
@@ -11,26 +11,6 @@ async function evalXPATH(html: string, xpath: string): Promise<string[]> {
     }
 }
 
-function buildPrompt(html: string, field: string, attempt: number): string {
-    const perturbations = ["\nUse class names like [@class='...'].", "\nTry different class or tag combinations.", "\nLook at the parent-child structure.", "\nUse position-based selectors if needed.", "\nTry a simpler selector."];
-    const extra = perturbations[attempt] || "";
-    return `
-Generate ONE XPATH expression to extract ALL "${field}" values from this HTML.
-
-CRITICAL RULES:
-- Return ONLY the XPATH expression, no explanations
-- MUST use structural selectors (class names, tag names, positions)
-- NEVER use contains() or text content matching
-- Use [@class='className'] for class-based selection
-- Add /text() at the end to get text content
-- The XPATH must select ALL matching elements (not just one)${extra}
-
-HTML:
-${html}
-
-XPATH for "${field}":`;
-}
-
 async function generateXPaths(html: string, fields: string[]): Promise<string[]> {
     const xpaths: string[] = [];
     const maxAttempts = 5;
@@ -41,8 +21,7 @@ async function generateXPaths(html: string, fields: string[]): Promise<string[]>
 
         let xpath = "//text()";
         for (let attempt = 0; attempt < maxAttempts; attempt++) {
-            const promptText = buildPrompt(html, field, attempt);
-            const generatedXPath = await promptGrammarXPATH(promptText);
+            const generatedXPath = await genXPATH(html, field, attempt);
             if (!generatedXPath) {
                 continue;
             }

@@ -66,7 +66,36 @@ export function parseXPATH(response: string): string | null {
     return null;
 }
 
-export async function promptGrammarXPATH(input: string): Promise<string | null> {
-    const response = await session.prompt(input, enableReprod);
+// prettier-ignore
+const perturbations = [
+    "\nUse class names like [@class='...'].",
+    "\nTry different class or tag combinations.",
+    "\nLook at the parent-child structure.",
+    "\nUse position-based selectors if needed.",
+    "\nTry a simpler selector.",
+];
+
+function buildPrompt(html: string, query: string, attemptCount: number): string {
+    const extra = perturbations[attemptCount] || "";
+    return `
+Generate ONE XPATH expression to extract ALL "${query}" values from this HTML.
+
+CRITICAL RULES:
+- Return ONLY the XPATH expression, no explanations
+- MUST use structural selectors (class names, tag names, positions)
+- NEVER use contains() or text content matching
+- Use [@class='className'] for class-based selection
+- Add /text() at the end to get text content
+- The XPATH must select ALL matching elements (not just one)${extra}
+
+HTML:
+${html}
+
+XPATH for "${query}":`;
+}
+
+export async function genXPATH(html: string, query: string, attemptCount: number): Promise<string | null> {
+    const promptText = buildPrompt(html, query, attemptCount);
+    const response = await session.prompt(promptText, enableReprod);
     return parseXPATH(response);
 }
