@@ -28,4 +28,4 @@ outlook:
 - accuracy improvements: better models, fine-tuning on xpath synthesis tasks, prompt engineering with few-shot examples, chain-of-thought prompting to improve reasoning about html structure.
 - scaling to 100k pages: considering rate-limit per domain and exponential backoff, queueing urls with redis/rabbitmq, parallelizing with bounded concurrency, using coroutines and task dispatching pattterns for efficiency.
 - dynamic content / auth / anti-scraping: rendering SPAs via headless browsers, managing sessions/tokens for auth, randomizing requests, rotating user agents, handling CAPTCHAs and proxies cautiously. (also see: https://media.ccc.de/v/why2025-131-stealth-web-scraping-techniques-for-osint)
-- extraction accuracy / schema changes: validate extracted data, maintain regression dataset, regenerate XPaths on schema drift, version queries, log failures for automated updates.
+- extraction accuracy / schema changes: validate extracted data, maintain regression dataset, regenerate xpath on schema drift, version queries, log failures for automated updates.
