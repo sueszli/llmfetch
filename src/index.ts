@@ -5,38 +5,24 @@ async function evalXPATH(html: string, xpath: string): Promise<string[]> {
         const { JSDOM } = await import("jsdom");
         const { document, XPathResult } = new JSDOM(html).window;
         const result = document.evaluate(xpath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
-        return Array.from({ length: result.snapshotLength }, (_, i) => result.snapshotItem(i)?.textContent || "");
+        return Array.from({ length: result.snapshotLength }, (_, i) => result.snapshotItem(i)?.textContent?.trim() || "");
     } catch {
         return [];
     }
 }
 
-async function generateXPaths(html: string, fields: string[]): Promise<string[]> {
-    const xpaths: string[] = [];
-    const maxAttempts = 5;
-
-    for (let i = 0; i < fields.length; i++) {
-        const field = fields[i];
-        if (!field) continue;
-
-        let xpath = "//text()";
-        for (let attempt = 0; attempt < maxAttempts; attempt++) {
-            const generatedXPath = await genXPATH(html, field, attempt);
-            if (!generatedXPath) {
-                continue;
-            }
-
-            const results = await evalXPATH(html, generatedXPath);
-
-            if (results.length > 0) {
-                xpath = generatedXPath;
-                break;
-            }
+async function generateXPaths(html: string, fields: string[]): Promise<void> {
+    const findResults = async (field: string) => {
+        for (let i = 0; i < 5; i++) {
+            const xpath = await genXPATH(html, field, i).catch(() => null);
+            if (!xpath) continue;
+            const results = await evalXPATH(html, xpath);
+            if (results.some((r) => r.length > 0)) return results;
         }
-
-        xpaths.push(xpath);
-    }
-    return xpaths;
+        return [];
+    };
+    const results = await Promise.all(fields.map(findResults));
+    results.forEach((res, i) => console.log(`${fields[i]}:`, res));
 }
 
 const html = `
@@ -72,10 +58,4 @@ const html = `
 
 const fields = ["product title", "price", "rating", "stock"];
 
-generateXPaths(html, fields)
-    .then((xpaths) => {
-        fields.forEach((field, i) => {
-            console.log(`Field: ${field}\nXPath: ${xpaths[i]}\n`);
-        });
-    })
-    .catch(console.error);
+generateXPaths(html, fields);
