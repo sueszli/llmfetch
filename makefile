@@ -1,7 +1,9 @@
 .PHONY: run
 run:
 	npm install
-	npm start
+	lsof -ti:3000 > /dev/null 2>&1 || (npm start & echo $$! > /tmp/llmfetch-backend.pid && until curl -s http://localhost:3000 > /dev/null 2>&1; do sleep 0.1; done)
+	npm run tui
+	[ -f /tmp/llmfetch-backend.pid ] && kill $$(cat /tmp/llmfetch-backend.pid) 2>/dev/null && rm /tmp/llmfetch-backend.pid || true
 
 .PHONY: fmt
 fmt:
@@ -15,5 +17,5 @@ test:
 
 .PHONY: clean
 clean:
-# 	rm -rf dist node_modules models
+	# rm -rf dist node_modules models
 	rm -rf *.db
