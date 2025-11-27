@@ -77,8 +77,9 @@ const urlInput = blessed.textbox({
         fg: "white",
         bg: "black",
         focus: { fg: "white", bg: "black" },
+        border: { fg: "cyan" },
     },
-    border: { type: "line", fg: "cyan" },
+    border: { type: "line" },
 });
 
 const fieldsLabel = blessed.text({
@@ -87,7 +88,6 @@ const fieldsLabel = blessed.text({
     content: "Fields (comma-separated, e.g., field1,field2,field3):",
     style: { fg: "white", bold: true },
 });
-
 const fieldsInput = blessed.textbox({
     top: 6,
     left: 2,
@@ -98,8 +98,9 @@ const fieldsInput = blessed.textbox({
         fg: "white",
         bg: "black",
         focus: { fg: "white", bg: "black" },
+        border: { fg: "cyan" },
     },
-    border: { type: "line", fg: "cyan" },
+    border: { type: "line" },
 });
 
 const submitButton = blessed.button({

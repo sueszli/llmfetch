@@ -7,7 +7,7 @@ clean:
 run:
 	npm install
 
-	lsof -ti:3000 > /dev/null 2>&1 || (npm start & echo $$! > /tmp/llmfetch-backend.pid && until curl -s http://localhost:3000 > /dev/null 2>&1; do sleep 0.1; done)
+	lsof -ti:3000 > /dev/null 2>&1 || (npm start > /tmp/llmfetch-backend.log 2>&1 & echo $$! > /tmp/llmfetch-backend.pid && until curl -s http://localhost:3000 > /dev/null 2>&1; do sleep 0.1; done)
 
 	npm run tui
 
