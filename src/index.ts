@@ -56,9 +56,9 @@ async function main(html: string, fields: string[]) {
             if (!success) continue;
 
             console.log(field, results);
+            break;
         }
     }
 }
 
-await main(html, fields);
-console.log("done");
+main(html, fields);
