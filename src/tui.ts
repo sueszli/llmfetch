@@ -64,7 +64,7 @@ async function fetchJobs() {
                 .join(", ");
             return `[${j.id}] ${new Date(j.createdAt).toLocaleString()} | ${fieldsList || "empty"}`;
         });
-        jobList.setItems(items.length > 0 ? items : ["No tables found"]);
+        jobList.setItems(items.length > 0 ? items : ["No tables found - create one!"]);
         screen.render();
     } catch (err) {
         jobList.setItems([`Error: ${err}`]);
