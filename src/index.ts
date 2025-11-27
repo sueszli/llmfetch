@@ -6,7 +6,7 @@ import { log } from "./utils.js";
 
 const app = new Hono();
 
-// create
+// create new table by scraping { url, fields }
 app.post("/jobs", async (c) => {
     const { url, fields } = await c.req.json<{ url: string; fields: string[] }>();
     if (!url || !Array.isArray(fields) || fields.length === 0) {
@@ -33,8 +33,10 @@ app.post("/jobs", async (c) => {
     }
 });
 
-// read
+// read all tables ids
 app.get("/jobs", (c) => c.json(listJobs()));
+
+// read table by id
 app.get("/jobs/:id", (c) => {
     const id = parseInt(c.req.param("id"));
     if (isNaN(id)) return c.json({ error: "invalid id" }, 400);
@@ -42,7 +44,7 @@ app.get("/jobs/:id", (c) => {
     return data.length > 0 ? c.json(data) : c.json({ error: "not found" }, 404);
 });
 
-// delete
+// delete table by id
 app.delete("/jobs/:id", (c) => {
     const id = parseInt(c.req.param("id"));
     if (isNaN(id)) return c.json({ error: "invalid id" }, 400);
