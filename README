@@ -13,8 +13,20 @@ in this small-scale experiment, we use llms to generate xpath queries instead. g
 
 this yields a neuro-symbolic approach to web scraping, combining the pattern recognition strengths of llms with the reliability, efficiency and interpretability of symbolic extraction methods like xpath (or css selectors). it needs just enough context for the model to recognize the a pattern, and can then apply the generated queries to arbitrarily large documents without further llm calls.
 
+usage:
+
+...
+
 methodology:
 
 - `ggml` / `node-llama-cpp` instead of `webllm` for local inference, because it can utilize metal performance shaders on apple silicon gpus. currently only supports nodejs.
 - `stable-code-instruct-3b` for xpath query generation. small enough for consumer hardware, but not very accurate. really limits the demo potential.
 - a custom parser because there is no grammer implemented to enforce xpath synthesis with ggml models yet: https://github.com/ggml-org/llama.cpp/tree/master/grammars
+- reproducibility via fixed random seeds and temperature 0 (greedy decoding).
+
+outlook:
+
+- accuracy improvements: better models, fine-tuning on xpath synthesis tasks, prompt engineering with few-shot examples, chain-of-thought prompting to improve reasoning about html structure.
+- scaling to 100k pages: considering rate-limit per domain and exponential backoff, queueing urls with redis/rabbitmq, parallelizing with bounded concurrency, using coroutines and task dispatching pattterns for efficiency.
+- dynamic content / auth / anti-scraping: rendering SPAs via headless browsers, managing sessions/tokens for auth, randomizing requests, rotating user agents, handling CAPTCHAs and proxies cautiously. (also see: https://media.ccc.de/v/why2025-131-stealth-web-scraping-techniques-for-osint)
+- extraction accuracy / schema changes: validate extracted data, maintain regression dataset, regenerate XPaths on schema drift, version queries, log failures for automated updates.
