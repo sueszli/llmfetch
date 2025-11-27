@@ -69,54 +69,21 @@ function getTableName(id: number): string | null {
     return table ? table.name : null;
 }
 
-export type JobInfo = {
-    id: number;
-    createdAt: Date;
-    fields: Record<string, number>; // field name -> count of elements
-};
+export function readJob(jobId: number, rowId?: number): JobRow[] {
+    const tableName = getTableName(jobId);
+    if (!tableName) return [];
 
-export function listJobs(): JobInfo[] {
-    const tables = sqlite.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name LIKE 'job_%'").all() as any[];
+    if (rowId !== undefined) {
+        const stmt = sqlite.prepare(`SELECT * FROM ${tableName} WHERE id = ?`);
+        const result = stmt.get(rowId);
+        return result ? [result as JobRow] : [];
+    }
 
-    return tables
-        .map((t) => {
-            const match = t.name.match(/^job_(\d+)_/);
-            if (!match) return null;
-            const id = parseInt(match[1], 10);
-            if (isNaN(id)) return null;
-
-            const tableName = t.name;
-
-            // Extract creation datetime from id (timestamp in milliseconds)
-            const createdAt = new Date(id);
-
-            // Get column information
-            const columns = sqlite.prepare(`PRAGMA table_info(${tableName})`).all() as any[];
-            const fieldNames = columns.filter((col: any) => col.name !== "id").map((col: any) => col.name);
-
-            // Count non-null values for each field
-            const fields: Record<string, number> = {};
-            for (const fieldName of fieldNames) {
-                const result = sqlite.prepare(`SELECT COUNT(*) as count FROM ${tableName} WHERE ${fieldName} IS NOT NULL AND ${fieldName} != ''`).get() as any;
-                const originalName = fieldName.replace(/^f_/, "");
-                fields[originalName] = result.count;
-            }
-
-            return { id, createdAt, fields };
-        })
-        .filter((job): job is JobInfo => job !== null)
-        .sort((a, b) => b.id - a.id);
+    const stmt = sqlite.prepare(`SELECT * FROM ${tableName}`);
+    return stmt.all() as JobRow[];
 }
 
-export function deleteJob(id: number): boolean {
-    const tableName = getTableName(id);
-    if (!tableName) return false;
-
-    sqlite.exec(`DROP TABLE ${tableName}`);
-    return true;
-}
-
-export function insertJobData(jobId: number, data: Record<string, string>): number {
+export function updateJob(jobId: number, data: Record<string, string>): number {
     const tableName = getTableName(jobId);
     if (!tableName) throw new Error(`Job ${jobId} not found`);
 
@@ -132,19 +99,58 @@ export function insertJobData(jobId: number, data: Record<string, string>): numb
     return result.lastInsertRowid as number;
 }
 
-export function getJobData(jobId: number): JobRow[] {
-    const tableName = getTableName(jobId);
-    if (!tableName) return [];
-
-    const stmt = sqlite.prepare(`SELECT * FROM ${tableName}`);
-    return stmt.all() as JobRow[];
-}
-
-export function deleteJobData(jobId: number, dataId: number): boolean {
-    const tableName = getTableName(jobId);
+export function deleteJob(id: number): boolean {
+    const tableName = getTableName(id);
     if (!tableName) return false;
 
-    const stmt = sqlite.prepare(`DELETE FROM ${tableName} WHERE id = ?`);
-    const result = stmt.run(dataId);
-    return result.changes > 0;
+    sqlite.exec(`DROP TABLE ${tableName}`);
+    return true;
+}
+
+export type JobInfo = {
+    id: number;
+    createdAt: Date;
+    fields: Record<string, number>; // field name -> count of elements
+};
+
+export function listJobs(): JobInfo[] {
+    const parseTableName = (tableName: string): { id: number; createdAt: Date } | null => {
+        const match = tableName.match(/^job_(\d+)_(\d{4})_(\d{2})_(\d{2})_(\d{2})_(\d{2})_(\d{2})$/);
+        if (!match) return null;
+
+        const id = parseInt(match[1]!, 10);
+        if (isNaN(id)) return null;
+
+        const [, , yyyy, mm, dd, hh, min, ss] = match;
+        const createdAt = new Date(parseInt(yyyy!, 10), parseInt(mm!, 10) - 1, parseInt(dd!, 10), parseInt(hh!, 10), parseInt(min!, 10), parseInt(ss!, 10));
+
+        return { id, createdAt };
+    };
+
+    const countEntries = (tableName: string): Record<string, number> => {
+        const columns = sqlite.prepare(`PRAGMA table_info(${tableName})`).all() as any[];
+        const fieldNames = columns.filter((col: any) => col.name !== "id").map((col: any) => col.name);
+
+        const fields: Record<string, number> = {};
+        for (const fieldName of fieldNames) {
+            const result = sqlite.prepare(`SELECT COUNT(*) as count FROM ${tableName} WHERE ${fieldName} IS NOT NULL AND ${fieldName} != ''`).get() as any;
+            const originalName = fieldName.replace(/^f_/, "");
+            fields[originalName] = result.count;
+        }
+
+        return fields;
+    };
+
+    const tables = sqlite.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name LIKE 'job_%'").all() as any[];
+    return tables
+        .map((t) => {
+            const parsed = parseTableName(t.name);
+            if (!parsed) return null;
+            const { id, createdAt } = parsed;
+
+            const fields = countEntries(t.name);
+            return { id, createdAt, fields };
+        })
+        .filter((job): job is JobInfo => job !== null)
+        .sort((a, b) => b.id - a.id);
 }
