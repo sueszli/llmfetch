@@ -12,7 +12,9 @@ this yields a neuro-symbolic approach to web scraping, combining the pattern rec
 
 usage:
 
-- ...
+```
+$ make run
+```
 
 methodology:
 
