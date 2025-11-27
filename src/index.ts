@@ -23,20 +23,12 @@ XPATH for "${field}":`;
 async function evalXPATH(html: string, xpath: string): Promise<string[]> {
     try {
         const { JSDOM } = await import("jsdom");
-        const dom = new JSDOM(html);
-        const { document } = dom.window;
-        const XPathResult = dom.window.XPathResult;
+        const { document, XPathResult } = new JSDOM(html).window;
 
         const result = document.evaluate(xpath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
-        const values: string[] = [];
-        for (let i = 0; i < result.snapshotLength; i++) {
-            const node = result.snapshotItem(i);
-            if (node) {
-                values.push(node.textContent || "");
-            }
-        }
-        return values;
-    } catch (e) {
+
+        return Array.from({ length: result.snapshotLength }, (_, i) => result.snapshotItem(i)?.textContent || "");
+    } catch {
         return [];
     }
 }

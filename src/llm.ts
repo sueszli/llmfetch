@@ -18,18 +18,18 @@ export async function prompt(input: string): Promise<string> {
 }
 
 export function isValidXPATH(xpathStr: string): boolean {
-    if (!xpathStr.startsWith("/") && !xpathStr.startsWith("//")) return false;
+    const startsWithSlash = xpathStr.startsWith("/") || xpathStr.startsWith("//");
+    const hasContent = xpathStr.replace(/^\/+/, "").length > 0;
+    const hasNoHtmlTags = !xpathStr.includes("<") && !xpathStr.includes(">");
+    const hasValidLength = xpathStr.length >= 2 && xpathStr.length < 1000;
 
-    const content = xpathStr.replace(/^\/+/, "");
-    if (content.length === 0) return false;
-
-    if (xpathStr.includes("<") || xpathStr.includes(">")) return false;
-    if (xpathStr.length < 2 || xpathStr.length >= 1000) return false;
+    if (!startsWithSlash || !hasContent || !hasNoHtmlTags || !hasValidLength) {
+        return false;
+    }
 
     try {
-        const dummyDom = new JSDOM("<!DOCTYPE html><html><body></body></html>");
-        const dummyDoc = dummyDom.window.document;
-        xpath.selectWithResolver(xpathStr, dummyDoc, { lookupNamespaceURI: () => "http://example.com/ns" });
+        const { document } = new JSDOM("<!DOCTYPE html><html><body></body></html>").window;
+        xpath.selectWithResolver(xpathStr, document, { lookupNamespaceURI: () => "http://example.com/ns" });
         return true;
     } catch {
         return false;
@@ -44,37 +44,27 @@ export function parseXPATH(response: string): string | null {
         .map((l) => l.trim())
         .filter((l) => l.length > 0);
 
+    // prettier-ignore
+    const extractionPatterns = [
+        (line: string) => (line.startsWith("//") || line.startsWith("/")) ? line : null,
+        (line: string) => line.match(/```(?:xpath)?\s*(\/\/?.+?)```/)?.[1]?.trim() ?? null,
+        (line: string) => line.match(/`(\/\/?.+?)`/)?.[1]?.trim() ?? null,
+        (line: string) => line.match(/(\/\/[^\s]+)/)?.[1]?.trim() ?? null,
+    ];
+
     for (const line of lines) {
-        if (line.startsWith("//") || line.startsWith("/")) {
-            if (isValidXPATH(line)) return line;
-        }
-
-        // code blocks ```
-        const match1 = line.match(/```(?:xpath)?\s*(\/\/?.+?)```/);
-        if (match1 && match1[1]) {
-            const xpath = match1[1].trim();
-            if (isValidXPATH(xpath)) return xpath;
-        }
-
-        // backticks `
-        const match2 = line.match(/`(\/\/?.+?)`/);
-        if (match2 && match2[1]) {
-            const xpath = match2[1].trim();
-            if (isValidXPATH(xpath)) return xpath;
-        }
-
-        // loose XPath anywhere in the line
-        const match3 = line.match(/(\/\/[^\s]+)/);
-        if (match3 && match3[1]) {
-            const xpath = match3[1].trim();
-            if (isValidXPATH(xpath)) return xpath;
+        for (const extract of extractionPatterns) {
+            const xpath = extract(line);
+            if (xpath && isValidXPATH(xpath)) {
+                return xpath;
+            }
         }
     }
 
     const trimmed = response.trim();
-    if (trimmed.startsWith("//") || trimmed.startsWith("/")) {
-        const firstLine = trimmed.split("\n")[0];
-        if (firstLine && isValidXPATH(firstLine)) return firstLine;
+    const firstLine = trimmed.split("\n")[0];
+    if (firstLine && (trimmed.startsWith("//") || trimmed.startsWith("/")) && isValidXPATH(firstLine)) {
+        return firstLine;
     }
 
     return null;
