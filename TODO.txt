@@ -1,15 +1,14 @@
-Build a mini AI scraper that fetches HTML from a URL and structures the data with an LLM to then display the results with a simple UI.
+Build a mini AI scraper that fetches HTML from a URL and structures the data with an LLM to then display the results with a simple terminal user interface.
 
 Core flow:
+
 - User enters a URL and defines what data they want to extract (schema)
 - System fetches the page content
 - LLM processes the raw data and extracts structured data matching the schema
 - Results are displayed in a clean, usable format
 
+Features:
+
 - Implement a web server that supports CRUD operations for create/update/delete/list of scrapers.
 - Create a scraping engine that fetches HTML from a given website and processes it with an LLM to extract structured data.
 - Design a suitable database schema for storing scrapers (e.g SQLite).
-
-# Frontend
-
-- terminal user interface like htop that gives a real-time view of scraping jobs, their status, and results.
