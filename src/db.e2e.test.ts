@@ -1,12 +1,31 @@
-import { test } from "node:test";
+import { test, before, after } from "node:test";
 import assert from "node:assert";
-import { createJob, readJob, updateJob, deleteJob, listJobs, closeDB, type JobRow, type JobInfo } from "./db.js";
+import { createJob, readJob, updateJob, deleteJob, listJobs, closeDB, initDB, type JobRow, type JobInfo } from "./db.js";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
-const dbPath = path.join(dirname, "..", "scrapers.db");
+const testDbPath = path.join(dirname, "..", "test-scrapers.db");
+
+before(() => {
+    initDB(testDbPath);
+});
+
+after(() => {
+    closeDB();
+    if (fs.existsSync(testDbPath)) {
+        fs.unlinkSync(testDbPath);
+    }
+    const walPath = testDbPath + "-wal";
+    const shmPath = testDbPath + "-shm";
+    if (fs.existsSync(walPath)) {
+        fs.unlinkSync(walPath);
+    }
+    if (fs.existsSync(shmPath)) {
+        fs.unlinkSync(shmPath);
+    }
+});
 
 test("should create a job with fields", () => {
     const fields = ["title", "price", "rating"];
@@ -296,7 +315,7 @@ test("should handle very long field values", () => {
 });
 
 test("should create database file if it doesn't exist", () => {
-    assert.ok(fs.existsSync(dbPath));
+    assert.ok(fs.existsSync(testDbPath));
 });
 
 test("should allow updating only subset of fields", () => {

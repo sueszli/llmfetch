@@ -4,16 +4,25 @@ import { fileURLToPath } from "url";
 import { log } from "./utils.js";
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
-const dbPath = path.join(dirname, "..", "scrapers.db");
+const defaultDbPath = path.join(dirname, "..", "scrapers.db");
 
 export type JobRow = {
     id: number;
     [key: string]: string | number; // dynamic string fields
 };
 
-const sqlite: Database.Database = new Database(dbPath);
+let sqlite: Database.Database = new Database(defaultDbPath);
 sqlite.pragma("journal_mode = WAL"); // fast table creation, https://sqlite.org/wal.html
 sqlite.exec(`CREATE TABLE IF NOT EXISTS _metadata (key TEXT PRIMARY KEY, value INTEGER NOT NULL)`); // table counter
+
+export function initDB(dbPath?: string) {
+    if (sqlite) {
+        sqlite.close();
+    }
+    sqlite = new Database(dbPath || defaultDbPath);
+    sqlite.pragma("journal_mode = WAL");
+    sqlite.exec(`CREATE TABLE IF NOT EXISTS _metadata (key TEXT PRIMARY KEY, value INTEGER NOT NULL)`);
+}
 
 export function closeDB() {
     sqlite.close();
