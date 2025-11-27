@@ -13,7 +13,7 @@ const context = await model.createContext();
 const session = new LlamaChatSession({ contextSequence: context.getSequence() });
 const enableReprod = { temperature: 0, topK: 1, topP: 1.0, seed: 42 };
 
-export async function prompt(input: string): Promise<string> {
+async function prompt(input: string): Promise<string> {
     return await session.prompt(input, enableReprod);
 }
 
