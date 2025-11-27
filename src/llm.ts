@@ -113,6 +113,7 @@ function buildPrompt(html: string, query: string): string {
 }
 
 async function genXPATH(html: string, query: string, attemptCount: number): Promise<string | null> {
+    log("generating xpath", JSON.stringify({ query, attemptCount }));
     const promptText = buildPrompt(html, query);
     const samplingParams = {
         temperature: 0,
@@ -124,7 +125,7 @@ async function genXPATH(html: string, query: string, attemptCount: number): Prom
     };
     const response = await session.prompt(promptText, samplingParams);
     const parsed = parseXPATH(response);
-    log("generated xpath", JSON.stringify({ query, xpath: parsed, attemptCount }));
+    log("generated xpath", JSON.stringify({ query, attemptCount, xpath: parsed }));
     return parsed;
 }
 
@@ -139,8 +140,21 @@ async function evalXPATH(html: string, xpath: string): Promise<string[]> {
     }
 }
 
+function trimHTML(html: string): string {
+    html = html.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "");
+    html = html.replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, "");
+    html = html.replace(/<!--[\s\S]*?-->/g, "");
+    const bodyMatch = html.match(/<body[^>]*>([\s\S]*)<\/body>/i);
+    if (bodyMatch?.[1]) {
+        html = bodyMatch[1];
+    }
+    html = html.replace(/\s+/g, " ");
+    html = html.replace(/>\s+</g, "><");
+    return html.trim();
+}
+
 export async function parseHTML(html: string, field: string, maxAttempts = 5) {
-    html = html.trim();
+    html = trimHTML(html);
     for (let i = 0; i < maxAttempts; i++) {
         const xpath = await genXPATH(html, field, i).catch(() => null);
         if (!xpath) continue;
