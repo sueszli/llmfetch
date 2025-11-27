@@ -7,12 +7,14 @@ o-+---o |  neuro-symbolic
   o-----o
 ```
 
-usually to extract structured data from html using llms is to ask the model to output the data directly. this has several limitations: (1) it can hallucinate values, (2) is brittle to changes in html structure, (3) offers limited interpretability and debuggability and most importantly (3) does not scale due to context window constraints and the cost of repeated api calls.
+commonly, extracting structured data from html using llms involves asking the model to output the data directly. this approach has several limitations: (1) it can hallucinate values, (2) is brittle to changes in html structure and most importantly (3) does not scale due to context window constraints and the cost of repeated api calls.
 
-in this small-scale experiment, we use llms to generate xpath queries. given a smaller subset of the html and the target fields, the model can produce queries that can be evaluated on the full document to retrieve the data. this yields a neuro-symbolic approach to web scraping, combining the pattern recognition strengths of llms with the reliability, efficiency and interpretability of symbolic data extraction methods like xpath.
+in this small-scale experiment, we use llms to generate xpath queries instead. given a smaller subset of the html and the target fields, the model produces queries that can then be evaluated on the full document to retrieve the data.
 
-design decisions:
+this yields a neuro-symbolic approach to web scraping, combining the pattern recognition strengths of llms with the reliability, efficiency and interpretability of symbolic extraction methods like xpath (or css selectors). it needs just enough context for the model to recognize the a pattern, and can then apply the generated queries to arbitrarily large documents without further llm calls.
+
+methodology:
 
 - `ggml` / `node-llama-cpp` instead of `webllm` for local inference, because it can utilize metal performance shaders on apple silicon gpus. currently only supports nodejs.
-- `stable-code-instruct-3b` for xpath query generation. small enough for consumer hardware, but not very accurate.
-- custom parser because there is no grammer implemented for structured xpath synthesis with ggml models yet.
+- `stable-code-instruct-3b` for xpath query generation. small enough for consumer hardware, but not very accurate. really limits the demo potential.
+- a custom parser because there is no grammer implemented for structured xpath synthesis with ggml models yet.
