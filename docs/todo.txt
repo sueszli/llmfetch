@@ -1,6 +1,4 @@
-# Backend (Deno)
-
-Build a scraper that takes a URL, fetches the HTML, structures the data with an LLM.
+# Backend
 
 Core flow:
 
