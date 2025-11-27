@@ -68,17 +68,17 @@ export function parseXPATH(response: string): string | null {
 
 function buildPrompt(html: string, query: string, attemptCount: number): string {
     // prettier-ignore
-    const baseRules = [
+    const rules = [
         "Return ONLY the XPATH expression, no explanations",
         "MUST use structural selectors (class names, tag names, positions)",
         "NEVER use contains() or text content matching",
         "Use [@class='className'] for class-based selection",
-        "Add /text() at the end to get text content",
         "The XPATH must select ALL matching elements (not just one)",
     ];
-
+    
     // prettier-ignore
     const perturbations = [
+        "Add /text() at the end to get text content",
         "Focus on class names like [@class='...']",
         "Try different class or tag combinations",
         "Look at the parent-child structure carefully",
@@ -90,14 +90,20 @@ function buildPrompt(html: string, query: string, attemptCount: number): string 
         "Use ancestor-descendant relationships",
         "Consider combining multiple attributes in the selector",
     ];
+    rules.push(perturbations[attemptCount - 1] || "");
 
-    const rules = [...baseRules];
-    const perturbation = perturbations[attemptCount - 1];
-    if (perturbation) {
-        rules.push(perturbation);
-    }
-
-    return [`Generate ONE XPATH expression to extract ALL "${query}" values from this HTML.`, "", "CRITICAL RULES:", ...rules.map((rule) => `- ${rule}`), "", "HTML:", html, "", `XPATH for "${query}":`].join("\n");
+    // prettier-ignore
+    return [
+        `Generate ONE XPATH expression to extract ALL "${query}" values from this HTML.`,
+        "",
+        "CRITICAL RULES:",
+        ...rules.map((rule) => `- ${rule}`),
+        "",
+        "HTML:",
+        html,
+        "",
+        `XPATH for "${query}":`
+    ].join("\n");
 }
 
 export async function genXPATH(html: string, query: string, attemptCount: number): Promise<string | null> {
