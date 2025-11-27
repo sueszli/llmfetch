@@ -1,3 +1,0 @@
-ULTRATHINK implement a terminal user interface as a second process. that's simple, leverages the most popular TUI library and is implemented in very few lines of code. it should work similar to htop and send requests to the backend for monitoring use a library that lets you write code concisely. it should always display a list of clickable buttons each showing tables in the database that i can click on to have a scrollable table view of the scraped data like a database browser
-
-Next.js + React for the frontend ----> skip this for now
