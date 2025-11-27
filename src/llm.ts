@@ -124,6 +124,6 @@ export async function genXPATH(html: string, query: string, attemptCount: number
     };
     const response = await session.prompt(promptText, samplingParams);
     const parsed = parseXPATH(response);
-    log("generated xpath", { query, attemptCount, xpath: parsed });
+    log("generated xpath", JSON.stringify({ query, attemptCount, xpath: parsed }));
     return parsed;
 }
