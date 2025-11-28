@@ -10,9 +10,10 @@ in this small-scale experiment, we use llms to generate xpath queries instead. g
 
 this yields a neuro-symbolic approach to web scraping, combining the pattern recognition strengths of llms with the reliability, efficiency and interpretability of symbolic extraction methods like xpath (or css selectors). it needs just enough context for the model to recognize the a pattern and can then apply the generated queries to arbitrarily large documents without further llm calls.
 
-to use, run: `make run`.
+usage:
 
-check out screenshots on: https://github.com/sueszli/llmfetch/tree/main/docs
+- demo: `$ make run`
+- screenshots: https://github.com/sueszli/llmfetch/tree/main/docs
 
 methodology:
 
@@ -20,7 +21,7 @@ methodology:
 - `stable-code-instruct-3b` for xpath query generation. small enough for consumer hardware, but not very accurate. really limits the demo potential.
 - xpath instead of css selectors, because of their expressivity.
 - a custom parser because there is no grammer implemented to enforce xpath synthesis with ggml models yet: https://github.com/ggml-org/llama.cpp/tree/master/grammars
-- reproducibility via fixed random seeds and temperature 0 (greedy decoding).
+- reproducibility via fixed random seeds, temperature 0 (greedy decoding), using compiled npm dependency for llm call instead of ollama
 - a test suite with regression and e2e tests for drift detection.
 
 outlook:
